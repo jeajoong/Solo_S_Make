@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.resource.BuildInfoDao">
+
+    <resultMap type="buildInfo" id="buildInfoMap">
+        <result column="BLD_TYPE_GB_CD"      property="bldTypeGBCD"/>
+        <result column="MGM_BLD_PK"          property="buildingPK"/>
+          <result column="REGSTR_GB_CD"        property="regstrGBCD"/>
+          <result column="REGSTR_KIND_CD"      property="regstrKINKCD"/>
+          <result column="SIDO_NM"             property="sidoNM"/>
+          <result column="SIGUNGU_NM"          property="sigunguNM"/>
+          <result column="BJDONG_NM"           property="bjdongNM"/>
+          <result column="BUN"                 property="bunNum"/>
+          <result column="JI"                  property="jiNum"/>
+          <result column="BLD_NM"              property="bldNM"/>
+          <result column="MAIN_PURPS_NM"       property="etcPurps"/>
+          <result column="STRCT_NM"            property="etcStruct"/>
+    </resultMap>
+    
+    <!-- 리스트에 출력용(간단하게) -->
+    <!-- 표시 항목 : 건축물 유형 구분코드, 관리 건축물 PK, 대장 구분 종류, 대장 종류 코드, 
+                                       시도명, 시군구명, 법정동명, 번, 지,
+                                       대지면적, 건축면적, 건폐율, 용적율,
+                                       주용도, 주구조
+     -->
+    <select id="findBuildList" parameterType="map" resultMap="buildInfoMap">
+    select DISTINCT A.BLD_TYPE_GB_CD, A.MGM_BLD_PK, A.REGSTR_GB_CD, A.REGSTR_KIND_CD,
+           B.SIDO_NM, B.SIGUNGU_NM, B.BJDONG_NM, A.BUN, A.JI, A.BLD_NM,
+           C.CD_NM, D.CD_NM
+      from BDT_BLDRGST A
+      left outer join CMC_BJDONG_MGM B on A.SIGUNGU_CD = B.SIGUNGU_CD
+                                      and A.BJDONG_CD  = B.BJDONG_CD
+      left outer join (SELECT * FROM CMC_COMM_CD_MGM WHERE LGRP_CD = 'CM024') C on A.MAIN_PURPS_CD = C.SGRP_CD
+      left outer join (SELECT * FROM CMC_COMM_CD_MGM WHERE LGRP_CD = 'CM004') D on A.STRCT_CD = D.SGRP_CD
+     where A.SIGUNGU_CD = '${sigunguCD}'
+       and A.BJDONG_CD = '${bjdongCD}'
+       and A.BUN LIKE '%'||'${bunText}'||'%'
+       and A.JI  LIKE '%'||'${jiText}' ||'%'
+
+    </select>
+    
+
+    
+</mapper>
+

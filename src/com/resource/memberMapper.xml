@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.resource.MemberDao">
+    <resultMap type="member" id="MemberMap">
+        <result column="USER_ID" property="id"/>
+        <result column="USER_NM" property="name"/>
+        <result column="PWD" property="pwd"/>
+        <result column="USER_AUTHRT_CD" property="userGrade"/>
+    </resultMap>
+
+
+  <sql id="select1">  
+  Select
+    USER_ID,
+    USER_NM,
+    PWD,
+    USER_AUTHRT_CD
+  from
+    CMC_USER_MGM
+  </sql>
+
+
+    <select id="selectOneMember" parameterType="map" resultType="Member">
+        <include refid="select1"/>
+        where USER_ID = #{id}
+          and PWD = #{pwd}
+    </select>
+    
+</mapper>
+

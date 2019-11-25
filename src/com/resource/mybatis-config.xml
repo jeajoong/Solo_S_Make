@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration
+PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+
+    <typeAliases>
+        <package name ="com.application.vo"/>
+    </typeAliases>
+
+    <environments default="development">
+        <environment id="development">
+            <transactionManager type="JDBC"/>
+            <dataSource type="POOLED">
+                <property name="driver" value="oracle.jdbc.driver.OracleDriver"/>
+                <property name="url" value="jdbc:oracle:thin:@192.168.0.110:1521:nbem2"/>
+                <property name="username" value="nbem2_adm"/>
+                <property name="password" value="nbem02"/>
+            </dataSource>
+        </environment>
+    </environments>
+
+        <mappers>
+            <mapper resource="com/resource/memberMapper.xml"/>
+            <mapper resource="com/resource/addressMapper.xml"/>
+            <mapper resource="com/resource/buildingMapper.xml"/>
+            <mapper resource="com/resource/buildInfoMapper.xml"/>
+        </mappers>
+</configuration>

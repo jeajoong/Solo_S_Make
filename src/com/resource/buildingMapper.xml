@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.resource.BuildingDao">
+
+    <resultMap type="building" id="buildingMap">
+        <result column="BLD_TYPE_GB_CD"      property="bldTypeGBCD"/>
+        <result column="MGM_BLD_PK"          property="buildingPK"/>
+          <result column="REGSTR_GB_CD"        property="regstrGBCD"/>
+          <result column="REGSTR_KIND_CD"      property="regstrKINKCD"/>
+          <result column="SIGUNGU_CD"          property="sigunguCD"/>
+          <result column="BJDONG_CD"           property="bjdongCD"/>
+          <result column="HJDONG_CD"           property="hjdongCD"/>
+          <result column="PLAT_GB_CD"          property="platGBCD"/>
+          <result column="BUN"                 property="bunNum"/>
+          <result column="JI"                  property="jiNum"/>
+          <result column="BYLOT_CNT"           property="byLotCNT"/>
+          <result column="BLD_NM"              property="bldNM"/>
+          <result column="DONG_NM"             property="dongNM"/>
+          <result column="HO_NM"               property="hoNM"/>
+          <result column="DONG_CD"             property="dongCD"/>
+          <result column="HO_CD"               property="hoCD"/>
+          <result column="ETC_RCD_ITEM"        property="etcrcdITEM"/>
+          <result column="VIOL_BLD_YN"         property="violbldYN"/>
+          <result column="REGSTR_SEQNO"        property="regstrSEQNO"/>
+          <result column="SPCMT"               property="spcmt"/>
+          <result column="PLAT_AREA"           property="platArea"/>
+          <result column="ARCH_AREA"           property="archArea"/>
+          <result column="BC_RAT"              property="bcRat"/>
+          <result column="VL_RAT_ESTM_TOTAREA" property="vlRatEstmTotArea"/>
+          <result column="VL_RAT"              property="vlRat"/>
+          <result column="TOTAREA"             property="totArea"/>
+          <result column="MAIN_PURPS_CD"       property="mainPurpsCD"/>
+          <result column="ETC_PURPS"           property="etcPurps"/>
+          <result column="STRCT_CD"            property="strctCD"/>
+          <result column="ETC_STRCT"           property="etcStruct"/>
+          <result column="ROOF_CD"             property="roofCD"/>
+          <result column="ETC_ROOF"            property="etcRoof"/>
+          <result column="HHLD_CNT"            property="hhldCNT"/>
+          <result column="FMLY_CNT"            property="fmlyCNT"/>
+          <result column="HO_CNT"              property="hoCNT"/>
+          <result column="HEIT"                property="heit"/>
+          <result column="GRND_FLR_CNT"        property="grndFlrCNT"/>
+          <result column="UGRND_FLR_CNT"       property="ugrndFlrCNT"/>
+          <result column="MAIN_BLD_CNT"        property="mainBldCNT"/>
+          <result column="ATCH_BLD_CNT"        property="atchBldCnt"/>
+          <result column="ATCH_BLD_AREA"       property="atchBldArea"/>
+          <result column="TOT_PKNG_CNT"        property="totPkngCNT"/>
+          <result column="NA_ROAD_CD"          property="naRoadCD"/>
+          <result column="NA_BJDONG_CD"        property="naBjdongCD"/>
+          <result column="NA_GRND_UGRND_CD"    property="naGrndUgrndCD"/>
+          <result column="NA_MAIN_BUN"         property="naMainBun"/>
+          <result column="NA_SUB_BUN"          property="naSubBun"/>
+          <result column="OPER_SRVR_RFLC_YN"   property="operSrvrRflcYN"/>
+          
+    <association property="address" javaType="Address">
+        <result column="SIGUNGU_CD" property="sigunguCD" />
+        <result column="BJDONG_CD"  property="bjdongCD" />
+          <result column="SIDO_NM"        property="sidoNM"/>
+          <result column="SIGUNGU_NM"     property="sigunguNM"/>
+          <result column="BJDONG_NM"      property="bjdongNM"/>
+          <result column="HJDONG_NM"      property="hjdongNM"/>
+          <result column="HJDONG_CD"      property="hjdongCD"/>
+          <result column="APPLY_STRT_DAY" property="applyStartDay"/>
+          <result column="APPLY_EXP_DAY"  property="applyExpDay"/>
+    </association>
+    </resultMap>
+    
+    
+    
+    
+    <!-- 리스트에 출력용(간단하게) -->
+    <!-- 표시 항목 : 건축물 유형 구분코드, 관리 건축물 PK, 대장 구분 종류, 대장 종류 코드, 
+                                       시도명, 시군구명, 법정동명, 번, 지,
+                                       대지면적, 건축면적, 건폐율, 용적율,
+                                       기타용도, 기타구조
+     -->
+    <select id="findBuilding" parameterType="map" resultMap="buildingMap">
+    select A.BLD_TYPE_GB_CD, A.MGM_BLD_PK, A.REGSTR_GB_CD, A.REGSTR_KIND_CD,
+           B.SIDO_NM, B.SIGUNGU_NM, B.BJDONG_NM, A.BUN, A.JI, A.BLD_NM,
+           A.PLAT_AREA, A.ARCH_AREA, A.BC_RAT, A.VL_RAT,
+           A.ETC_PURPS, A.ETC_STRCT
+      from BDT_BLDRGST A
+      left outer join CMC_BJDONG_MGM B on A.SIGUNGU_CD = B.SIGUNGU_CD
+                                      and A.BJDONG_CD = B.BJDONG_CD
+     where A.SIGUNGU_CD = '${sigunguCD}'
+       and A.BJDONG_CD = '${bjdongCD}'
+       and A.BUN LIKE '%'||'${bunText}'||'%'
+       and A.JI  LIKE '%'||'${jiText}' ||'%'
+
+    </select>
+    
+
+    
+</mapper>
+

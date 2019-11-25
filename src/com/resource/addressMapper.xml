@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.resource.AddressDao">
+    <resultMap type="address" id="AddressMap">
+        <result column="SIDO_NM" property="sidoNM"/>
+        <result column="SIGUNGU_NM" property="sigunguNM"/>
+        <result column="BJDONG_NM" property="bjdongNM"/>
+        <result column="HJDONG_NM" property="hjdongNM"/>
+        <result column="SIGUNGU_CD" property="sigunguCD"/>
+        <result column="BJDONG_CD" property="bjdongCD"/>
+        <result column="HJDONG_CD" property="hjdongCD"/>
+        <result column="APPLY_STRT_DAY" property="applyStartDay"/>
+        <result column="APPLY_EXP_DAY" property="applyExpDay"/>
+    </resultMap>
+
+  <sql id="selectAddressAll">
+  Select *
+    from CMC_BJDONG_MGM
+  </sql>
+
+    <!-- 처음 시도명을 눌렀을 때 조회할 시군구명 -->
+    <select id="findSigunguNM" parameterType="java.lang.String" resultType="java.lang.String">
+     select DISTINCT SIGUNGU_NM
+       from CMC_BJDONG_MGM
+      where SIDO_NM = '${value}'
+        and SIGUNGU_NM NOT LIKE '%출장소%'
+    </select>
+    
+    <!-- 처음 시도명을 눌렀을 때 처음 시군구로 조회할 법정동명 -->
+    <select id="findBjdongNM" parameterType="map" resultType="java.lang.String">
+    select DISTINCT BJDONG_NM
+      from CMC_BJDONG_MGM
+     where SIDO_NM    = '${sidoSelect}'
+       and SIGUNGU_NM = '${firstSigunguName}'
+       and APPLY_EXP_DAY = '99991231'
+    </select>
+    
+    <!-- 시군구코드를 찾을 때 -->
+    <select id="findSigunguCD" parameterType="map" resultType="java.lang.String">
+    select DISTINCT SIGUNGU_CD
+      from CMC_BJDONG_MGM
+     where SIDO_NM    = '${sidoNM}'
+       and SIGUNGU_NM = '${sigunguNM}'
+       and APPLY_EXP_DAY = '99991231'
+    </select>
+    
+    <!-- 법정동코드를 찾을 때 -->
+    <select id="findBjdongCD" parameterType="map" resultType="java.lang.String">
+    select DISTINCT BJDONG_CD
+      from CMC_BJDONG_MGM
+     where SIDO_NM    = '${sidoNM}'
+       and SIGUNGU_NM = '${sigunguNM}'
+       and BJDONG_NM  = '${bjdongNM}'
+       and APPLY_EXP_DAY = '99991231'
+    </select>
+    
+    
+</mapper>
+
