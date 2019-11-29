@@ -52,8 +52,10 @@ public class DBLogin {
   
   public Member login(String id, String pwd) throws SQLException {
       Member member = new Member();
-        String name = null;
-        String userGrade = null;
+        String checkId = null;
+        String checkName = null;
+        String checkPwd = null;
+        String checkUserGrade = null;
         
           conn = DriverManager.getConnection(url, user, password);
 
@@ -71,20 +73,19 @@ public class DBLogin {
           // 작은따옴표도 필요한지 생각해야함.
           
           rs = stmt.executeQuery(sql);
-          
           while(rs.next()) {
-            id = rs.getString(1);
-            name = rs.getString(2);
-            pwd = rs.getString(3);
-            userGrade = rs.getString(4);
+            checkId = rs.getString("USER_ID");
+            checkName = rs.getString("USER_NM");
+            checkPwd = rs.getString("PWD");
+            checkUserGrade = rs.getString("USER_AUTHRT_CD");
           }
-
-          member.setId(id);
-          member.setName(name);
-          member.setPwd(pwd);
-          member.setUserGrade(userGrade);
           
-          System.out.println(id +" " + name + " " + pwd + " " +userGrade);
+          member.setId(checkId);
+          member.setName(checkName);
+          member.setPwd(checkPwd);
+          member.setUserGrade(checkUserGrade);
+          
+          System.out.println(checkId +" " + checkName + " " + checkPwd + " " +checkUserGrade);
           
       return member;
   }

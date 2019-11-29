@@ -200,7 +200,7 @@ public class LoginForm extends JFrame implements ActionListener{
     try{
       Member memberInfo = db.login(id, pwd);
       
-     if(memberInfo == null) {
+     if(memberInfo.getId() == null) {
        JOptionPane.showMessageDialog(btnLogin, "아이디와 비밀번호를 확인하세요. 대소문자를 구분합니다.");
        return 0;
      } else {

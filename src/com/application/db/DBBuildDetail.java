@@ -21,6 +21,9 @@ public class DBBuildDetail { // MainPage에서 한 행을 클릭했을 때 해�
   String user = "nbem2_adm";
   String password = "nbem02";
   
+  FindIP findIP = new FindIP();
+  String ip = null;
+  
   Connection conn = null;
   Statement stmt = null;
   ResultSet rs = null;
@@ -61,8 +64,8 @@ public class DBBuildDetail { // MainPage에서 한 행을 클릭했을 때 해�
  public List<BuildInfo> findBuildList(
      String sigunguCD, String bjdongCD, String bunText, String jiText) throws SQLException {
    
-   FindIP findIP = new FindIP();
-   String ip = findIP.findCom(sigunguCD);
+   
+   ip = findIP.findCom(sigunguCD);
    
    url = "jdbc:oracle:thin:@"+ip+":1521:nbem2";
    user = "nbem2_"+ sigunguCD +"_adm";
@@ -113,7 +116,7 @@ public class DBBuildDetail { // MainPage에서 한 행을 클릭했을 때 해�
    return buildingList;
  }
 
-// 해당 정보로 건축물 대장을 찾음.(일반건축물대장...)
+// 해당 정보로 건축물 대장 상세정보를 찾음.(일반건축물대장 및 총괄대장)
 public Build findBuild(String bldTypeGBCD, String buildingPK, String getRegstrGBCD, String getRegstrKINKCD,
                           String sidoNM, String sigunguNM,
                           String bjdongNM, String bunNum, String jiNum) throws SQLException {
@@ -123,8 +126,7 @@ public Build findBuild(String bldTypeGBCD, String buildingPK, String getRegstrGB
   String sigunguCD = dbAddress.findSigunguCD(sidoNM, sigunguNM);
   String bjdongCD = dbAddress.findBjdongCD(sidoNM, sigunguNM, bjdongNM);
   
-  FindIP findIP = new FindIP();
-  String ip = findIP.findCom(sigunguCD);
+  ip = findIP.findCom(sigunguCD);
   
   url = "jdbc:oracle:thin:@"+ip+":1521:nbem2";
   user = "nbem2_"+ sigunguCD +"_adm";
@@ -205,6 +207,78 @@ public Build findBuild(String bldTypeGBCD, String buildingPK, String getRegstrGB
 }
 
 
+//해당 정보로 건축물 대장 상세정보를 찾음.(일반건축물대장 및 총괄대장)
+public Build findDongBuild(String bldTypeGBCD, String buildingPK, String getRegstrGBCD, String getRegstrKINKCD,
+                       String sidoNM, String sigunguNM,
+                       String bjdongNM, String bunNum, String jiNum) throws SQLException {
+  
+  DBAddress dbAddress = new DBAddress();
+  
+  String sigunguCD = dbAddress.findSigunguCD(sidoNM, sigunguNM);
+  String bjdongCD = dbAddress.findBjdongCD(sidoNM, sigunguNM, bjdongNM);
+  
+  url = "jdbc:oracle:thin:@"+ip+":1521:nbem2";
+  user = "nbem2_"+ sigunguCD +"_adm";
+  
+  conn = DriverManager.getConnection(url, user, password);
+
+  stmt = conn.createStatement();
+  
+  
+  String sql1 = "";
+  
+//  -- 총괄표제부에서 건축물현황(동 건물)
+//  select DISTINCT A.BLD_TYPE_GB_CD, A.MGM_BLD_PK, A.REGSTR_GB_CD, A.REGSTR_KIND_CD,
+//         A.MAIN_ATCH_GB_CD, -- 이게 0이면 주인듯 (구분)
+//         A.REGSTR_SEQNO, -- 혹시라도 동명이 없으면 이걸로 오름차순
+//         A.DONG_NM, -- 이게 동 명 (명칭)
+//         N.SIDO_NM||' '||N.SIGUNGU_NM||' '||N.NA_ROAD_NM|| ' ' ||N.NA_MAIN_BUN || DECODE(N.NA_SUB_BUN, '0', '', '-')||DECODE(N.NA_SUB_BUN, '0','') AS PLAT_NEW_LOC,
+//           D.CD_NM AS STRCT_NM,
+//           E.CD_NM AS ROOF_NM,
+//           TO_CHAR(TO_NUMBER(A.GRND_FLR_CNT) + TO_NUMBER(A.UGRND_FLR_CNT)) AS FLR_CNT,
+//         C.CD_NM AS MAIN_PURPS_NM,
+//         A.TOTAREA -- 연면적
+//    from BDT_BLDRGST A
+//    left outer join CMC_BJDONG_MGM B  on A.SIGUNGU_CD = B.SIGUNGU_CD
+//                                     and A.BJDONG_CD  = B.BJDONG_CD
+//    left outer join CMC_NEWADDR_MGM N on B.SIDO_NM    = N.SIDO_NM
+//                                     and B.SIGUNGU_CD = N.SIGUNGU_CD
+//                                     and B.BJDONG_CD  = N.BJDONG_CD
+//                                     and TO_CHAR(TO_NUMBER(A.BUN)) = N.BUN
+//                                     and TO_CHAR(TO_NUMBER(A.JI))  = N.JI
+//    left outer join (SELECT * FROM CMC_COMM_CD_MGM WHERE LGRP_CD = 'CM024') C on A.MAIN_PURPS_CD = C.SGRP_CD
+//    left outer join (SELECT * FROM CMC_COMM_CD_MGM WHERE LGRP_CD = 'CM004') D on A.STRCT_CD = D.SGRP_CD
+//    left outer join (SELECT * FROM CMC_COMM_CD_MGM WHERE LGRP_CD = 'CM036') E on A.ROOF_CD  = E.SGRP_CD
+//       where A.BLD_TYPE_GB_CD = '1'
+//         and A.REGSTR_GB_CD = '2'
+//         and A.REGSTR_KIND_CD = '3'
+//         and A.SIGUNGU_CD = '11530'
+//         and A.BJDONG_CD = '10800'
+//         and A.BUN LIKE '%81%'
+//         and A.JI LIKE '%171%'
+//    ORDER BY A.REGSTR_SEQNO;
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+    return null;
+  
+  
+
+}
+
+
+
+
+
+
+// 주구조 코드 리스트를 찾음
 public Map<String,String> findjugujoCodeList() throws SQLException {
     conn = DriverManager.getConnection(url, user, password);
 
@@ -335,7 +409,8 @@ public List<Floor> findFlrInfo(Build build) throws SQLException {
      + "               MAIN_ATCH_SEQNO, MGM_MAIN_BLD_PK, AREA_EXCT_YN, FLR_SEQNO "
      + "          from BDT_BLD_FLR_OULN "
      + "         where BLD_TYPE_GB_CD = '"+ build.getBldTypeGBCD().toString() + "' " 
-     + "           and MGM_BLD_PK = '"+ build.getBuildingPK().toString() + "' " ;
+     + "           and MGM_BLD_PK = '"+ build.getBuildingPK().toString() + "' " 
+     + "           order by MGM_FLR_OULN_PK ";
 
   rs = stmt.executeQuery(sql);
 
@@ -370,10 +445,11 @@ public List<Owner> findOwnrInfo(Build build) throws SQLException {
   conn = DriverManager.getConnection(url, user, password);
   stmt = conn.createStatement();
   
-  String sql = "SELECT BLD_TYPE_GB_CD, MGM_BLD_PK, MGM_OWNR_INFO_PK, NM, OWN_GB_CD, QUOTA1, QUOTA2, OWNSH_QUOTA "
-             + "  FROM BDT_BLD_OWNR "
-             + " WHERE BLD_TYPE_GB_CD = '"+ build.getBldTypeGBCD().toString() + " ' "
-             + "   AND MGM_BLD_PK = '"+ build.getBuildingPK() +"' ";
+  String sql = "select BLD_TYPE_GB_CD, MGM_BLD_PK, MGM_OWNR_INFO_PK, NM, OWN_GB_CD, QUOTA1, QUOTA2, OWNSH_QUOTA "
+             + "  from BDT_BLD_OWNR "
+             + " where BLD_TYPE_GB_CD = '"+ build.getBldTypeGBCD().toString() + " ' "
+             + "   and MGM_BLD_PK = '"+ build.getBuildingPK() +"' "
+             + " order by MGM_OWNR_INFO_PK ";
   
   rs = stmt.executeQuery(sql);
   

@@ -8,6 +8,7 @@ import java.awt.List;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -25,14 +26,12 @@ import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.PrintSetup;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import com.application.db.DBBuildDetail;
+import com.application.requireClass.MultiLineHeaderRenderer;
 import com.application.vo.Build;
 import com.application.vo.BuildInfo;
 import com.application.vo.Floor;
@@ -44,6 +43,7 @@ public class DetailForm extends JFrame implements ActionListener{
   
   MainProcess main;
   BuildInfo buildInfo;
+  Build build;
   MainPage mainPage;
   DetailForm detailForm;
   DBBuildDetail dbBuildDetail = new DBBuildDetail();
@@ -161,7 +161,7 @@ public class DetailForm extends JFrame implements ActionListener{
 
     returnBtn.setText("돌아가기");              // (리스트) 돌아가기 버튼
     jButton2.setText("수정하기");               // 수정하기 버튼
-    printBtn.setText("인쇄하기");               // 인쇄하기 버튼
+    printBtn.setText("저장하기");               // 인쇄하기 버튼
     
     jLabel1.setText("해당 주소의 전체주소 ");        // 상단 전체주소 라벨
     jLabel21.setText("일반건축물대장");           // 일반건축물대장 라벨
@@ -583,7 +583,6 @@ public class DetailForm extends JFrame implements ActionListener{
   
   public static void main(String args[]) {
     
-    
     EventQueue.invokeLater(new Runnable() {
         public void run() {
             new DetailForm().setVisible(true);
@@ -605,7 +604,13 @@ public class DetailForm extends JFrame implements ActionListener{
      }
     
     if(select == printBtn) {
-        printWork();
+        try {
+          printWork(build);
+        } catch (IOException e1) {
+          e1.printStackTrace();
+        } catch (SQLException e1) {
+          e1.printStackTrace();
+        }
     }
     
  // 주구조 코드 ComboBox의 항목을 선택했을 때.
@@ -713,78 +718,213 @@ public class DetailForm extends JFrame implements ActionListener{
   
   
   
-  // Poi 라이브러리 사용
-  public void printWork() {
- // Workbook 생성
-    Workbook xlsWb = new HSSFWorkbook(); // Excel 2007 이전 버전
-    Workbook xlsxWb = new XSSFWorkbook(); // Excel 2007 이상
-
-    // *** Sheet-------------------------------------------------
-    // Sheet 생성
-    Sheet sheet1 = xlsWb.createSheet("firstSheet"); //  import org.apache.poi.ss.usermodel.Sheet; 사용
-
-    // 컬럼 너비 설정
-    sheet1.setColumnWidth(0, 10000);
-    sheet1.setColumnWidth(9, 10000);
-    // ----------------------------------------------------------
-     
-    // *** Style--------------------------------------------------
-    // Cell 스타일 생성
-    CellStyle cellStyle = xlsWb.createCellStyle();
-     
-    // 줄 바꿈
-    cellStyle.setWrapText(true);
-     
-     
-    Row row = null;
-    Cell cell = null;
-    //----------------------------------------------------------
-     
-    // 첫 번째 줄
-    row = sheet1.createRow(0);
-     
-    // 첫 번째 줄에 Cell 설정하기-------------
-    cell = row.createCell(0);
-    cell.setCellValue("1-1");
-    cell.setCellStyle(cellStyle); // 셀 스타일 적용
-     
-    cell = row.createCell(1);
-    cell.setCellValue("1-2");
-     
-    cell = row.createCell(2);
-    cell.setCellValue("1-3 abccdefghijklmnopqrstuvwxyz");
-    cell.setCellStyle(cellStyle); // 셀 스타일 적용
-    //---------------------------------
-     
-    // 두 번째 줄
-    row = sheet1.createRow(1);
-     
-    // 두 번째 줄에 Cell 설정하기-------------
-    cell = row.createCell(0);
-    cell.setCellValue("2-1");
-     
-    cell = row.createCell(1);
-    cell.setCellValue("2-2");
-     
-    cell = row.createCell(2);
-    cell.setCellValue("2-3");
-    cell.setCellStyle(cellStyle); // 셀 스타일 적용
-    //---------------------------------
-
-    // excel 파일 저장
-    try {
-        File xlsFile = new File("C:/testExcel.xls");
-        FileOutputStream fileOut = new FileOutputStream(xlsFile);
-        xlsWb.write(fileOut);
-        System.out.println("파일 저장 완료");
-    } catch (FileNotFoundException e) {
-        e.printStackTrace();
-    } catch (IOException e) {
-        e.printStackTrace();
+  
+  
+  // 엑셀에 건축물 정보 저장 후 인쇄하기 (Poi 라이브러리 사용) 
+  public void printWork(Build build) throws IOException, SQLException {
+    
+    FileInputStream fis = new FileInputStream("C:/Users/seoin_01/Desktop/project/Origin_xlxs/일반건축물대장.xlsx");
+    Workbook workbook = new XSSFWorkbook(fis);
+    
+//    CellStyle tableStyle1 = workbook.createCellStyle(); //THICK가 매우 굵은 줄 
+//      tableStyle1.setBorderBottom(BorderStyle.THICK); 
+//      tableStyle1.setBorderLeft(BorderStyle.THICK); 
+    
+    Sheet sheet1 = workbook.getSheetAt(0); // 시트가 1개일때 getSheetAt(0);
+    Sheet sheet2 = workbook.getSheetAt(1); // 층별 정보가 7개가 넘은 경우. 소유자 정보가 3개가 넘은 경우. 나머지 층별 정보를 sheet2에 넣고 for문으로 계속 출력.
+    
+    sheet1.getRow(4).getCell(2).setCellValue(jTextField5.getText()); // 고유번호
+    sheet1.getRow(4).getCell(9).setCellValue(jTextField6.getText()); // 명칭(건물명)
+    sheet1.getRow(4).getCell(11).setCellValue(jTextField7.getText()); // 특이사항
+    
+    sheet1.getRow(7).getCell(2).setCellValue(jTextField1.getText()); // 대지위치
+    sheet1.getRow(7).getCell(6).setCellValue(jTextField2.getText()); // 지번
+    sheet1.getRow(7).getCell(9).setCellValue(""); // 도로명주소
+    
+    sheet1.getRow(9).getCell(2).setCellValue(jTextField4.getText()); // 대지 면적
+    sheet1.getRow(9).getCell(4).setCellValue(jTextField9.getText()); // 연면적
+    sheet1.getRow(9).getCell(6).setCellValue(""); // 지역
+    sheet1.getRow(9).getCell(7).setCellValue(""); // 지구
+    sheet1.getRow(9).getCell(9).setCellValue(""); // 구역
+    
+    sheet1.getRow(11).getCell(2).setCellValue(jTextField8.getText());  // 건축면적
+    sheet1.getRow(11).getCell(4).setCellValue(jTextField13.getText()); // 용적률 산정용 연면적
+    
+    sheet1.getRow(11).getCell(6).setCellValue(jComboBox8.getSelectedItem().toString());   // 주 구조명
+    sheet1.getRow(11).getCell(7).setCellValue(jComboBox3.getSelectedItem().toString());   // 주 용도명
+    
+    sheet1.getRow(11).getCell(10).setCellValue(build.getGrndFlrCNT()); // 지상층
+    sheet1.getRow(11).getCell(12).setCellValue(build.getUgrndFlrCNT()); // 지하층
+    
+    sheet1.getRow(13).getCell(2).setCellValue(jTextField14.getText()); // 건폐율
+    sheet1.getRow(13).getCell(4).setCellValue(jTextField16.getText()); // 용적률
+    sheet1.getRow(13).getCell(6).setCellValue(jTextField19.getText()); // 높이
+    sheet1.getRow(13).getCell(7).setCellValue(jComboBox9.getSelectedItem().toString()); // 지붕구조
+    sheet1.getRow(13).getCell(9).setCellValue(jTextField24.getText()); // 부속건축물 수
+    
+    sheet1.getRow(16).getCell(2).setCellValue("");    // 공간 면적 합계
+    sheet1.getRow(16).getCell(4).setCellValue("");    // 공개 공지 면적
+    sheet1.getRow(16).getCell(6).setCellValue("");    // 쌈지 공원 면적
+    sheet1.getRow(16).getCell(7).setCellValue("");    // 공공보행통로
+    sheet1.getRow(16).getCell(9).setCellValue("");    // 건축선 후퇴면적
+    sheet1.getRow(16).getCell(11).setCellValue("");   // 그 밖의 면적
+    
+    java.util.List<Floor> floorList = dbBuildDetail.findFlrInfo(build);
+    // 잊지말자 배열은 0부터 ~ 크기는 0부터의 갯수
+    
+    int checkSum = 0;       
+    for (int i = 21; i < 21+floorList.size(); i++) { 
+      // 시트 위치는 21 행부터  층별 테이블은 0행부터 가져와서 붙여줘야 함.
+      sheet1.getRow(i).getCell(2).setCellValue((String) model1.getValueAt(i % 21, 0)); //구분
+      sheet1.getRow(i).getCell(3).setCellValue((String) model1.getValueAt(i % 21, 1)); //층별
+      sheet1.getRow(i).getCell(4).setCellValue((String) model1.getValueAt(i % 21, 2)); //구조
+      sheet1.getRow(i).getCell(5).setCellValue((String) model1.getValueAt(i % 21, 3)); //용도
+//      BigDecimal bdc = new BigDecimal(model1.getValueAt(i % 20 - 1, 4).toString()); 
+//      String platArea = bdc.setScale(4, BigDecimal.ROUND_HALF_UP).toString();
+      
+      String platArea = new BigDecimal(model1.getValueAt(i % 20 - 1, 4).toString())
+                            .setScale(2, BigDecimal.ROUND_HALF_UP).toString();
+      
+      sheet1.getRow(i).getCell(6).setCellValue(platArea);                                  //면적
+      
+      checkSum = checkSum + 1;
+      if (checkSum == 7) // checkSum이 7이면 층별정보가 7개.
+        break;
+    }
+    
+    java.util.List<Owner> ownerList = dbBuildDetail.findOwnrInfo(build);
+    
+    int checkSum2 = 0;
+    for(int i = 21; i< (2 * ownerList.size()) + 21; i++) { // 21 23 25행에 이름자리
+      sheet1.getRow(21 + (2 * checkSum2)).getCell(7).setCellValue((String) model2.getValueAt(checkSum2, 0)); // 이름
+      sheet1.getRow(21 + (2 * checkSum2)).getCell(9).setCellValue((String) model2.getValueAt(checkSum2, 2)); //소유권 지분
+      
+      checkSum2 = checkSum2 + 1;
+      if(checkSum2 == 3) // checkSum2이 3이면 소유자정보 3개 0,1,2
+        break;
     }
     
     
+    if (floorList.size() <= 7 && ownerList.size() <= 3) {
+    try {
+      File xlsFile = new File("C:/Users/seoin_01/Desktop/project/src/com/resource/일반건축물대장.xlsx");
+      FileOutputStream fileOut = new FileOutputStream(xlsFile);
+      workbook.write(fileOut);
+    } catch (FileNotFoundException e) {
+      e.printStackTrace();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    System.out.println("엑셀파일 저장 완료.");
+    }
+    // 엑셀파일 인쇄 설정
+    PrintSetup print = sheet1.getPrintSetup();
+    print.setPaperSize(PrintSetup.A4_PAPERSIZE);
+    print.setLandscape(true); // true면 가로방향 , 선언하지 않으면 기본 세로방향
+    
+    
+    // 더 출력하기.
+    if (floorList.size() > 7 || ownerList.size() > 3) { // 층별정보가 8개 이상이거나 소유자 정보가 4개 이상 일 때
+      
+      int flrPrintSize = (floorList.size() - 7) / 18;   // 층별 프린트 사이즈
+      int ownerPrintSize = (ownerList.size() - 3) / 9;  // 소유자 프린트 사이즈 
+      int printSize = 0;                                // printSize는 프린트 할 대장 수
+      
+      if ((floorList.size() - 7) % 18 != 0) {           // 만약  18개로 나눴는데 0이 아니라면 => 층별 정보가 남은 경우
+        flrPrintSize = flrPrintSize + 1;                // 한장더 추가한다.
+      }
+      
+      if((2 * ( ownerList.size() - 3)) % 18 != 0) {             // 만약 9개로 나눴는데 0이 아니라면 => 소유자 정보가 남은 경우
+        ownerPrintSize = ownerPrintSize +1;             // 한장더 추가한다.
+      }
+      
+      if (flrPrintSize > ownerPrintSize) {              // 층별 프린트 사이즈와 소유자 프린트 사이즈를 비교한다.  
+        printSize = flrPrintSize;                       // 더 큰 수를 printSize에 넣는다.
+      } else if (ownerPrintSize > flrPrintSize) {
+        printSize = ownerPrintSize;
+      }
+      
+      int flrStartInt = 7;                              // 층별 테이블의 모델에서의 값을 가져올 시작할 위치(배열의 시작위치값)
+      int flrCheckSum = 0;                              // 층별 테이블관련  내부 for문에서 갯수 제한. 및 model 데이터 위치 참조
+      int ownrStartInt = 3;                             // 소유자 테이블의 모델에서 값을 가져올 시작할 위치(배열의 시작위치값)
+      int ownrCheckSum = 0;                             // 소유자 테이블 관련 내부  for문에서 갯수 제한.
+      
+      // sheet2가 여러장이 될수 있으므로 for문 선언.
+      for (int i = 0; i < printSize; i++) {
+          workbook.cloneSheet(i+1);  // 1번 시트가 복사되었다.
+          sheet2.getRow(4).getCell(2).setCellValue(jTextField5.getText());  // 고유번호
+          sheet2.getRow(4).getCell(8).setCellValue(jTextField6.getText());  // 명칭
+          sheet2.getRow(4).getCell(10).setCellValue(jTextField7.getText()); // 특이사항
+          
+          sheet2.getRow(7).getCell(2).setCellValue(jTextField1.getText());  // 대지위치
+          sheet2.getRow(7).getCell(6).setCellValue(jTextField2.getText());  // 지번
+          
+          // 층별 현황을 출력
+          if (floorList.size() > 7) {
+            for (int j = 12; j < 12 + floorList.size()-flrStartInt; j++) {
+              sheet2.getRow(j).getCell(2).setCellValue((String) model1.getValueAt(flrCheckSum + flrStartInt, 0)); //구분
+              sheet2.getRow(j).getCell(3).setCellValue((String) model1.getValueAt(flrCheckSum + flrStartInt, 1)); //층별
+              sheet2.getRow(j).getCell(4).setCellValue((String) model1.getValueAt(flrCheckSum + flrStartInt, 2)); //구조
+              sheet2.getRow(j).getCell(5).setCellValue((String) model1.getValueAt(flrCheckSum + flrStartInt, 3)); //용도
+              String platArea = new BigDecimal(model1.getValueAt(flrCheckSum + flrStartInt, 4).toString())
+                  .setScale(2, BigDecimal.ROUND_HALF_UP).toString();
+              sheet2.getRow(j).getCell(6).setCellValue(platArea);
+              
+                flrCheckSum = flrCheckSum + 1;
+              if(flrCheckSum == 18)  // 18 => 추가건축물대장 층별리스트 크기
+                break;
+            }
+              flrCheckSum = 0;
+              flrStartInt = flrStartInt + 18; // 배열 시작위치 재정의
+          }
+          
+          // 소유자 현황을 출력
+            if(ownerList.size() > 3) {        
+              for(int k = 12; k < 12 + ownerList.size() - ownrStartInt; k++) {
+                if(2 * ownrCheckSum < ownerList.size()) {
+                sheet2.getRow(12 + (2 * ownrCheckSum)).getCell(7).setCellValue((String) model2.getValueAt(ownrCheckSum + ownrStartInt, 0)); // 이름
+                sheet2.getRow(12 + (2 * ownrCheckSum)).getCell(9).setCellValue((String) model2.getValueAt(ownrCheckSum + ownrStartInt, 2)); //소유권 지분
+                
+                ownrCheckSum = ownrCheckSum + 1;
+              if(ownrCheckSum == 9) { 
+                break;
+              }
+              }
+              }
+              ownrCheckSum = 0; 
+              ownrStartInt = ownrStartInt + 9;
+            }
+            
+            sheet2 = workbook.getSheetAt(i+2); // sheet2 객체에 새로 만든 비어있는시트를 넣고 종료 됨
+
+            // 엑셀파일 인쇄 설정
+            PrintSetup print2 = sheet2.getPrintSetup();
+            print2.setPaperSize(PrintSetup.A4_PAPERSIZE);
+            print2.setLandscape(true);      // true면 가로방향 , 선언하지 않으면 기본 세로방향
+        }
+
+      System.out.println("저장완료");
+      workbook.removeSheetAt(printSize + 1); // 마지막 비어있는 시트 제거
+      
+      try {
+        File xlsFile = new File("C:/Users/seoin_01/Desktop/project/src/com/resource/일반건축물대장.xlsx");
+        FileOutputStream fileOut = new FileOutputStream(xlsFile);
+        workbook.write(fileOut);
+      } catch (FileNotFoundException e) {
+        e.printStackTrace();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+      
+      
+      
+    }
+    
   }
+  
+  
+  
+  
   
 
   // 상세정보 폼이 실행되면 MainPage에서 BuildInfo 객체를 받아 Building(건축물대장)의 정보를 조회해서 뿌려준다.
@@ -933,6 +1073,7 @@ public class DetailForm extends JFrame implements ActionListener{
     flrTableSet(build);
     ownrTableSet(build);
     
+    this.build = build;
 
   } // inputBuildInfo() 끝
 
@@ -1014,9 +1155,7 @@ public class DetailForm extends JFrame implements ActionListener{
         floorListArray[3] = floorList.get(i).getMainPurpsNM();
         floorListArray[4] = floorList.get(i).getArea();
         model1.addRow(floorListArray);
-        System.out.println("------------------");
     }
-    
   }
   
   // 소유자정보를 조회해 소유자정보테이블에 뿌려주는 메서드

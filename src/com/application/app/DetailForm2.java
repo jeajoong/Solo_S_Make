@@ -23,7 +23,7 @@ import com.application.vo.Build;
 import com.application.vo.BuildInfo;
 
 // DetailForm2 => 총괄표제부  대장종류 (번호) : 1
-// 11-25 잠깐 멈춤. 일반건축물대장 프린트 도전.
+// 11-25 잠깐 멈춤. 일반건축물대장 프린트 도전. =>엑셀파일로 저장 완성
 public class DetailForm2 extends JFrame implements ActionListener{
   
   MainProcess main;
