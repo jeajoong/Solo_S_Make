@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class DBAddress { // MainPage에서 시도,시군구,법정동 콤보박스를 선택했을때 처리할 DB관련 클래스
+public class DBAddress { // 시도,시군구,법정동 콤보박스를 선택했을때 처리할 DB관련 클래스
   
   String driver = "oracle.jdbc.driver.OracleDriver";
   String url = "jdbc:oracle:thin:@localhost:1521:nbem2";
@@ -66,10 +66,11 @@ public class DBAddress { // MainPage에서 시도,시군구,법정동 콤보박�
     // 3) 원하는 결과는 쿼리로써 마무리 짓고, java 코드로 후작업하는 것은 권하지 않음
     // 4) 쿼리를 한 줄로 쓰기 어려운 경우 들여쓰기를 사용해도 되지만 띄어쓰기에 유의!!
     // 테이블명과 where 사이의 공백이 필요하거나 작은따옴표도 필요한지 생각해야함.
-    String sql = "select DISTINCT SIGUNGU_NM "
-        + " from CMC_BJDONG_MGM "
-        + " where SIDO_NM = '"+ sidoNM +"'"
-        + " and SIGUNGU_NM NOT LIKE '%출장소%'";
+    String sql = " select DISTINCT SIGUNGU_NM "
+               + "   from CMC_BJDONG_MGM "
+               + "  where SIDO_NM = '"+ sidoNM +"'"
+               + "    and SIGUNGU_NM NOT LIKE '%출장소%'"
+               + "    order by SIGUNGU_NM";
     
       rs = stmt.executeQuery(sql);
     
@@ -100,7 +101,8 @@ public class DBAddress { // MainPage에서 시도,시군구,법정동 콤보박�
                + "   from CMC_BJDONG_MGM "  
                + "  where SIDO_NM    =  '" + sidoSelect + "'"
                + "    and SIGUNGU_NM =  '" + firstSigunguName + "'"
-               + "    and APPLY_EXP_DAY = '99991231'";
+               + "    and APPLY_EXP_DAY = '99991231'"
+               + "    order by BJDONG_NM";
     
       rs = stmt.executeQuery(sql);
     }
@@ -110,7 +112,8 @@ public class DBAddress { // MainPage에서 시도,시군구,법정동 콤보박�
       String sql = " select DISTINCT BJDONG_NM " 
           + "   from CMC_BJDONG_MGM "  
           + "  where SIDO_NM    =  '" + sidoSelect + "'"
-          + "    and APPLY_EXP_DAY = '99991231'";
+          + "    and APPLY_EXP_DAY = '99991231'"
+          + "    order by BJDONG_NM";
       
       rs = stmt.executeQuery(sql);
     }

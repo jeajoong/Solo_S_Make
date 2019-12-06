@@ -24,6 +24,15 @@ public class DBBuildDetail { // MainPage에서 한 행을 클릭했을 때 해�
   FindIP findIP = new FindIP();
   String ip = null;
   
+  String sidoNM = null;
+  String sigunguNM = null;
+  String bjdongNM = null;
+  
+  String sigunguCD = null;
+  String bjdongCD = null;
+  String bunNum = null;
+  String jiNum = null;
+  
   Connection conn = null;
   Statement stmt = null;
   ResultSet rs = null;
@@ -59,72 +68,25 @@ public class DBBuildDetail { // MainPage에서 한 행을 클릭했을 때 해�
       }
   }
   
-  
-//건축물대장 리스트 찾는 메서드
- public List<BuildInfo> findBuildList(
-     String sigunguCD, String bjdongCD, String bunText, String jiText) throws SQLException {
-   
-   
-   ip = findIP.findCom(sigunguCD);
-   
-   url = "jdbc:oracle:thin:@"+ip+":1521:nbem2";
-   user = "nbem2_"+ sigunguCD +"_adm";
-   
-   conn = DriverManager.getConnection(url, user, password);
 
-   stmt = conn.createStatement();
-   
-   System.out.println("[정보!] DB 연결 url : "+url);
-   System.out.println("[정보!] DB 연결 user : "+user);
-   
-   String sql = " select DISTINCT A.BLD_TYPE_GB_CD, A.MGM_BLD_PK, A.REGSTR_GB_CD, A.REGSTR_KIND_CD, "
-              + "        B.SIDO_NM, B.SIGUNGU_NM, B.BJDONG_NM, A.BUN, A.JI, A.BLD_NM, "
-              + "        C.CD_NM AS MAIN_PURPS_NM, D.CD_NM AS STRCT_NM "
-              + "   from BDT_BLDRGST A "
-              + "   left outer join CMC_BJDONG_MGM B on A.SIGUNGU_CD = B.SIGUNGU_CD " 
-              + "                                   and A.BJDONG_CD  = B.BJDONG_CD " 
-              + "   left outer join (SELECT * FROM CMC_COMM_CD_MGM WHERE LGRP_CD = 'CM024') C on A.MAIN_PURPS_CD = C.SGRP_CD "  
-              + "   left outer join (SELECT * FROM CMC_COMM_CD_MGM WHERE LGRP_CD = 'CM004') D on A.STRCT_CD = D.SGRP_CD "  
-              + "  where A.SIGUNGU_CD = '" + sigunguCD + "'"  
-              + "    and A.BJDONG_CD  = '" + bjdongCD + "'"  
-              + "    and A.BUN LIKE '%'||'" + bunText + "'||'%'"
-              + "    and A.JI  LIKE '%'||'" + jiText  + "'||'%'"
-              + "    and ROWNUM <= 150";
-                   // 최대 150개 까지만 출력 (번지 정보 없을 때)
-   
-   rs = stmt.executeQuery(sql);
-   
-   List<BuildInfo> buildingList = new ArrayList<>();
-
-   while(rs.next()) {
-     BuildInfo buildInfo = new BuildInfo();
-     buildInfo.setBldTypeGBCD(rs.getString("BLD_TYPE_GB_CD"));
-     buildInfo.setBuildingPK(rs.getString("MGM_BLD_PK"));
-     buildInfo.setRegstrGBCD(rs.getString("REGSTR_GB_CD"));
-     buildInfo.setRegstrKINKCD(rs.getString("REGSTR_KIND_CD"));
-     buildInfo.setSidoNM(rs.getString("SIDO_NM"));
-     buildInfo.setSigunguNM(rs.getString("SIGUNGU_NM"));
-     buildInfo.setBjdongNM(rs.getString("BJDONG_NM"));
-     buildInfo.setBunNum(rs.getString("BUN"));
-     buildInfo.setJiNum(rs.getString("JI"));
-     buildInfo.setBldNM(rs.getString("BLD_NM"));
-     buildInfo.setMainPurpsNM(rs.getString("MAIN_PURPS_NM"));
-     buildInfo.setStrctNM(rs.getString("STRCT_NM"));
-     buildingList.add(buildInfo);
-   }
-   
-   return buildingList;
- }
-
-// 해당 정보로 건축물 대장 상세정보를 찾음.(일반건축물대장 및 총괄대장)
+// 해당 정보로 건축물 대장 상세정보를 찾음.(일반건축물대장 및 총괄대장) 전역 변수 sidoNM, sigunguNM, bjdongNM, sigunguCD, bjdongCD 에 값을 넣음.
 public Build findBuild(String bldTypeGBCD, String buildingPK, String getRegstrGBCD, String getRegstrKINKCD,
                           String sidoNM, String sigunguNM,
                           String bjdongNM, String bunNum, String jiNum) throws SQLException {
   
   DBAddress dbAddress = new DBAddress();
   
+  this.sidoNM = sidoNM;
+  this.sigunguNM = sigunguNM;
+  this.bjdongNM = bjdongNM;
+  
   String sigunguCD = dbAddress.findSigunguCD(sidoNM, sigunguNM);
   String bjdongCD = dbAddress.findBjdongCD(sidoNM, sigunguNM, bjdongNM);
+
+  this.sigunguCD = sigunguCD;
+  this.bjdongCD = bjdongCD;
+  this.bunNum = bunNum;
+  this.jiNum = jiNum;
   
   ip = findIP.findCom(sigunguCD);
   
@@ -135,7 +97,8 @@ public Build findBuild(String bldTypeGBCD, String buildingPK, String getRegstrGB
 
   stmt = conn.createStatement();
   
-  System.out.println(bldTypeGBCD +" ///" + buildingPK +" ///" + getRegstrGBCD +" ///" +getRegstrKINKCD);
+  System.out.println(bldTypeGBCD +"///" + buildingPK +"///" + getRegstrGBCD +"///" +getRegstrKINKCD + "///" 
+                     + sigunguCD +"///" + bjdongCD + "///" + bunNum + "///" + jiNum);
   
   String sql1 = "select DISTINCT A.BLD_TYPE_GB_CD, A.MGM_BLD_PK, A.REGSTR_GB_CD, A.REGSTR_KIND_CD, " 
               + "       A.SIGUNGU_CD||A.BJDONG_CD||'-'||A.PLAT_GB_CD||'-'||A.BUN||A.JI AS REGSTR_NO, " 
@@ -143,29 +106,34 @@ public Build findBuild(String bldTypeGBCD, String buildingPK, String getRegstrGB
               + "       A.SPCMT, "
               + "       B.SIDO_NM||' '||B.SIGUNGU_NM||' '||B.BJDONG_NM AS PLAT_LOC, "
               + "       TO_CHAR(TO_NUMBER(A.BUN))||'-'|| TO_CHAR(TO_NUMBER(A.JI)) AS JIBUN, "
+              
+              + "       N.SIDO_NM||' '||N.SIGUNGU_NM||' '||N.NA_ROAD_NM|| ' ' ||N.NA_MAIN_BUN ||"
+              + "       DECODE(N.NA_SUB_BUN, '0', '', '', '', '-')||DECODE(N.NA_SUB_BUN, '0','') AS PLAT_NEW_LOC, "
+              
               + "       A.PLAT_AREA, A.TOTAREA, " 
               + "       A.ARCH_AREA, A.VL_RAT_ESTM_TOTAREA, D.CD_NM AS STRCT_NM, A.STRCT_CD, "
               + "       C.CD_NM AS MAIN_PURPS_NM, A.MAIN_PURPS_CD, A.GRND_FLR_CNT, A.UGRND_FLR_CNT, " 
               + "       A.BC_RAT, A.VL_RAT, HEIT, E.CD_NM AS ROOF_NM, A.ROOF_CD, A.ATCH_BLD_CNT, "
-              + "       A.HO_CNT, A.TOT_PKNG_CNT, A.MAIN_BLD_CNT "
+              + "       A.HO_CNT, A.TOT_PKNG_CNT, A.MAIN_BLD_CNT , A.DONG_NM"
               + "  from BDT_BLDRGST A " 
-              + "  left outer join CMC_BJDONG_MGM B on A.SIGUNGU_CD = B.SIGUNGU_CD " 
-              + "                                   and A.BJDONG_CD  = B.BJDONG_CD " 
-              + "  left outer join (SELECT * FROM CMC_COMM_CD_MGM WHERE LGRP_CD = 'CM024') C on A.MAIN_PURPS_CD = C.SGRP_CD "
-              + "  left outer join (SELECT * FROM CMC_COMM_CD_MGM WHERE LGRP_CD = 'CM004') D on A.STRCT_CD = D.SGRP_CD "
-              + "  left outer join (SELECT * FROM CMC_COMM_CD_MGM WHERE LGRP_CD = 'CM036') E on A.ROOF_CD  = E.SGRP_CD "
-              + "  left outer join CMC_NEWADDR_MGM N on N.SIGUNGU_CD = A.SIGUNGU_CD "
-              + "                                   and N.BJDONG_CD = A.SIGUNGU_CD "
-              + "                                   and LPAD(N.BUN, 4, 0) = A.BUN "
-              + "                                   and LPAD(N.JI, 4, 0)  = A.JI "
+              + "        left outer join CMC_BJDONG_MGM B  on A.SIGUNGU_CD = B.SIGUNGU_CD "
+              + "                                         and A.BJDONG_CD  = B.BJDONG_CD " 
+              + "        left outer join CMC_NEWADDR_MGM N on B.SIDO_NM    = N.SIDO_NM " 
+              + "                                         and B.SIGUNGU_CD = N.SIGUNGU_CD " 
+              + "                                         and B.BJDONG_CD  = N.BJDONG_CD " 
+              + "                                         and TO_CHAR(TO_NUMBER(A.BUN)) = N.BUN " 
+              + "                                         and TO_CHAR(TO_NUMBER(A.JI))  = N.JI " 
+              + "                 left outer join (SELECT * FROM CMC_COMM_CD_MGM WHERE LGRP_CD = 'CM024') C on A.MAIN_PURPS_CD = C.SGRP_CD " 
+              + "                 left outer join (SELECT * FROM CMC_COMM_CD_MGM WHERE LGRP_CD = 'CM004') D on A.STRCT_CD = D.SGRP_CD " 
+              + "                 left outer join (SELECT * FROM CMC_COMM_CD_MGM WHERE LGRP_CD = 'CM036') E on A.ROOF_CD  = E.SGRP_CD " 
               + "     where A.BLD_TYPE_GB_CD = '" + bldTypeGBCD + "' "
               + "       and A.MGM_BLD_PK = '" + buildingPK + "' "
               + "       and A.REGSTR_GB_CD = '" + getRegstrGBCD + "' "
               + "       and A.REGSTR_KIND_CD = '" + getRegstrKINKCD + "' "
               + "       and A.SIGUNGU_CD = '"+ sigunguCD +"' " 
               + "       and A.BJDONG_CD = '"+ bjdongCD +"' "
-              + "       and A.BUN LIKE '%'||'"+ bunNum +"'||'%' "
-              + "       and A.JI  LIKE '%'||'"+ jiNum +"'||'%' ";
+              + "       and A.BUN = LPAD('"+bunNum+"', 4, '0') "  
+              + "       and A.JI  = LPAD('"+jiNum+"' , 4, '0') " ;
   
   rs = stmt.executeQuery(sql1);
   
@@ -181,6 +149,7 @@ public Build findBuild(String bldTypeGBCD, String buildingPK, String getRegstrGB
     build.setSpcmt(rs.getString("SPCMT"));
     build.setPlatLoC(rs.getString("PLAT_LOC"));
     build.setJiBun(rs.getString("JIBUN"));
+    build.setPlatNewLoc(rs.getString("PLAT_NEW_LOC"));
     build.setPlatArea(rs.getBigDecimal("PLAT_AREA"));
     build.setTotArea(rs.getBigDecimal("TOTAREA"));
     build.setArchArea(rs.getBigDecimal("ARCH_AREA"));
@@ -201,81 +170,71 @@ public Build findBuild(String bldTypeGBCD, String buildingPK, String getRegstrGB
     build.setHoCNT(rs.getInt("HO_CNT"));
     build.setTotPkngCNT(rs.getInt("TOT_PKNG_CNT"));
     build.setMainBldCnt(rs.getInt("MAIN_BLD_CNT"));
+    build.setDongNM(rs.getString("DONG_NM"));
   }
   
   return build;
 }
 
 
-//해당 정보로 건축물 대장 상세정보를 찾음.(일반건축물대장 및 총괄대장)
-public Build findDongBuild(String bldTypeGBCD, String buildingPK, String getRegstrGBCD, String getRegstrKINKCD,
-                       String sidoNM, String sigunguNM,
-                       String bjdongNM, String bunNum, String jiNum) throws SQLException {
-  
-  DBAddress dbAddress = new DBAddress();
-  
-  String sigunguCD = dbAddress.findSigunguCD(sidoNM, sigunguNM);
-  String bjdongCD = dbAddress.findBjdongCD(sidoNM, sigunguNM, bjdongNM);
-  
-  url = "jdbc:oracle:thin:@"+ip+":1521:nbem2";
-  user = "nbem2_"+ sigunguCD +"_adm";
-  
+// 집합건축물대장에 해당하는 동별 정보(표제부?)를 가져옴.
+public List<Build> findDongBuild() throws SQLException {
   conn = DriverManager.getConnection(url, user, password);
-
   stmt = conn.createStatement();
   
+  String sql = "  select DISTINCT A.BLD_TYPE_GB_CD, A.MGM_BLD_PK, A.REGSTR_GB_CD, A.REGSTR_KIND_CD, " 
+      + "                          A.MAIN_ATCH_GB_CD, " 
+      + "                          A.REGSTR_SEQNO, "
+      + "                          A.DONG_NM, "
+      + "                          N.SIDO_NM||' '||N.SIGUNGU_NM||' '||N.NA_ROAD_NM|| ' ' ||N.NA_MAIN_BUN ||"
+      + "                           DECODE(N.NA_SUB_BUN, '0', '', '', '', '-')||DECODE(N.NA_SUB_BUN, '0','') AS PLAT_NEW_LOC, "
+      + "                          D.CD_NM AS STRCT_NM, "
+      + "                          E.CD_NM AS ROOF_NM, "
+      + "                          TO_CHAR(TO_NUMBER(A.GRND_FLR_CNT) + TO_NUMBER(A.UGRND_FLR_CNT)) AS FLR_CNT, "
+      + "                          C.CD_NM AS MAIN_PURPS_NM, " 
+      + "                          A.TOTAREA "
+      + "            from BDT_BLDRGST A "
+      + "                 left outer join CMC_BJDONG_MGM B  on A.SIGUNGU_CD = B.SIGUNGU_CD "
+      + "                                                  and A.BJDONG_CD  = B.BJDONG_CD " 
+      + "                 left outer join CMC_NEWADDR_MGM N on B.SIDO_NM    = N.SIDO_NM " 
+      + "                                                  and B.SIGUNGU_CD = N.SIGUNGU_CD " 
+      + "                                                  and B.BJDONG_CD  = N.BJDONG_CD " 
+      + "                                                  and TO_CHAR(TO_NUMBER(A.BUN)) = N.BUN " 
+      + "                                                  and TO_CHAR(TO_NUMBER(A.JI))  = N.JI " 
+      + "                 left outer join (SELECT * FROM CMC_COMM_CD_MGM WHERE LGRP_CD = 'CM024') C on A.MAIN_PURPS_CD = C.SGRP_CD " 
+      + "                 left outer join (SELECT * FROM CMC_COMM_CD_MGM WHERE LGRP_CD = 'CM004') D on A.STRCT_CD = D.SGRP_CD " 
+      + "                 left outer join (SELECT * FROM CMC_COMM_CD_MGM WHERE LGRP_CD = 'CM036') E on A.ROOF_CD  = E.SGRP_CD " 
+      + "           where A.REGSTR_GB_CD = '2' "
+      + "             and A.REGSTR_KIND_CD = '3' "
+      + "             and A.SIGUNGU_CD = '"+sigunguCD+"' " 
+      + "             and A.BJDONG_CD = '"+bjdongCD+"' " 
+      + "             and A.BUN = LPAD('"+bunNum+"', 4, '0') "  
+      + "             and A.JI = LPAD('"+jiNum+"' , 4, '0') " 
+      + "        ORDER BY A.REGSTR_SEQNO ";
   
-  String sql1 = "";
+  rs = stmt.executeQuery(sql);
   
-//  -- 총괄표제부에서 건축물현황(동 건물)
-//  select DISTINCT A.BLD_TYPE_GB_CD, A.MGM_BLD_PK, A.REGSTR_GB_CD, A.REGSTR_KIND_CD,
-//         A.MAIN_ATCH_GB_CD, -- 이게 0이면 주인듯 (구분)
-//         A.REGSTR_SEQNO, -- 혹시라도 동명이 없으면 이걸로 오름차순
-//         A.DONG_NM, -- 이게 동 명 (명칭)
-//         N.SIDO_NM||' '||N.SIGUNGU_NM||' '||N.NA_ROAD_NM|| ' ' ||N.NA_MAIN_BUN || DECODE(N.NA_SUB_BUN, '0', '', '-')||DECODE(N.NA_SUB_BUN, '0','') AS PLAT_NEW_LOC,
-//           D.CD_NM AS STRCT_NM,
-//           E.CD_NM AS ROOF_NM,
-//           TO_CHAR(TO_NUMBER(A.GRND_FLR_CNT) + TO_NUMBER(A.UGRND_FLR_CNT)) AS FLR_CNT,
-//         C.CD_NM AS MAIN_PURPS_NM,
-//         A.TOTAREA -- 연면적
-//    from BDT_BLDRGST A
-//    left outer join CMC_BJDONG_MGM B  on A.SIGUNGU_CD = B.SIGUNGU_CD
-//                                     and A.BJDONG_CD  = B.BJDONG_CD
-//    left outer join CMC_NEWADDR_MGM N on B.SIDO_NM    = N.SIDO_NM
-//                                     and B.SIGUNGU_CD = N.SIGUNGU_CD
-//                                     and B.BJDONG_CD  = N.BJDONG_CD
-//                                     and TO_CHAR(TO_NUMBER(A.BUN)) = N.BUN
-//                                     and TO_CHAR(TO_NUMBER(A.JI))  = N.JI
-//    left outer join (SELECT * FROM CMC_COMM_CD_MGM WHERE LGRP_CD = 'CM024') C on A.MAIN_PURPS_CD = C.SGRP_CD
-//    left outer join (SELECT * FROM CMC_COMM_CD_MGM WHERE LGRP_CD = 'CM004') D on A.STRCT_CD = D.SGRP_CD
-//    left outer join (SELECT * FROM CMC_COMM_CD_MGM WHERE LGRP_CD = 'CM036') E on A.ROOF_CD  = E.SGRP_CD
-//       where A.BLD_TYPE_GB_CD = '1'
-//         and A.REGSTR_GB_CD = '2'
-//         and A.REGSTR_KIND_CD = '3'
-//         and A.SIGUNGU_CD = '11530'
-//         and A.BJDONG_CD = '10800'
-//         and A.BUN LIKE '%81%'
-//         and A.JI LIKE '%171%'
-//    ORDER BY A.REGSTR_SEQNO;
+  List<Build> buildingDongList = new ArrayList<>();
   
-  
-  
-  
-  
-  
-  
-  
-  
-  
-    return null;
-  
-  
+  while(rs.next()) {
+    Build buildingDongInfo = new Build();
+    buildingDongInfo.setBldTypeGBCD(rs.getString("BLD_TYPE_GB_CD"));
+    buildingDongInfo.setBuildingPK(rs.getString("MGM_BLD_PK"));
+    buildingDongInfo.setRegstrGBCD(rs.getString("REGSTR_GB_CD"));
+    buildingDongInfo.setRegstrKINKCD(rs.getString("REGSTR_KIND_CD"));
+    buildingDongInfo.setMainAtchGBCD(rs.getString("MAIN_ATCH_GB_CD"));
+    buildingDongInfo.setDongNM(rs.getString("DONG_NM"));
+    buildingDongInfo.setPlatNewLoc(rs.getString("PLAT_NEW_LOC"));
+    buildingDongInfo.setStrctNM(rs.getString("STRCT_NM"));
+    buildingDongInfo.setRoofNM(rs.getString("ROOF_NM"));
+    buildingDongInfo.setUpDownCNT(rs.getInt("FLR_CNT"));
+    buildingDongInfo.setMainPurpsNM(rs.getString("MAIN_PURPS_NM"));
+    buildingDongInfo.setTotArea(rs.getBigDecimal("TOTAREA"));
+    buildingDongList.add(buildingDongInfo);
+  }
+  return buildingDongList;
 
 }
-
-
-
-
 
 
 // 주구조 코드 리스트를 찾음
@@ -410,7 +369,7 @@ public List<Floor> findFlrInfo(Build build) throws SQLException {
      + "          from BDT_BLD_FLR_OULN "
      + "         where BLD_TYPE_GB_CD = '"+ build.getBldTypeGBCD().toString() + "' " 
      + "           and MGM_BLD_PK = '"+ build.getBuildingPK().toString() + "' " 
-     + "           order by MGM_FLR_OULN_PK ";
+     + "           order by FLR_NO_NM ";
 
   rs = stmt.executeQuery(sql);
 

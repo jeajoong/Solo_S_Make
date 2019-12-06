@@ -1,6 +1,6 @@
 package com.application.vo;
 
-public class BuildInfo { // main 페이지에서 리스트 출력 전용 VO ... 
+public class BuildInfo { // 리스트 출력 전용 건물 VO
   private String bldTypeGBCD;  // 건축물 유형 구분 코드
   private String buildingPK;   // 관리 건축물 PK
   private String regstrGBCD;   // 대장 구분 코드

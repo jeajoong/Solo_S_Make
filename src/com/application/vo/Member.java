@@ -1,6 +1,6 @@
 package com.application.vo;
 
-public class Member {
+public class Member { // 로그인 확인용 member
   private String id;
   private String name;
   private String pwd;

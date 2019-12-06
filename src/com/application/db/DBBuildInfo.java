@@ -20,6 +20,8 @@ public class DBBuildInfo { //리스트 출력 조회용
   Statement stmt = null;
   ResultSet rs = null;
   
+  int status = 0;
+  
   public DBBuildInfo() {
     try {
       Class.forName(driver);
@@ -30,6 +32,9 @@ public class DBBuildInfo { //리스트 출력 조회용
     }
   }
   
+  public int getStatus() {
+    return status;
+  }
   
   public void closeDatabase() {
       try {
@@ -52,7 +57,7 @@ public class DBBuildInfo { //리스트 출력 조회용
   }
   
   
-//건축물대장 리스트 찾는 메서드
+//건축물대장 리스트 찾는 메서드 (갯수가 너무 많을때 전유부를 제외하고 그래도 많다면 최대 700개까지만 조회)
  public List<BuildInfo> findBuildList(
      String sigunguCD, String bjdongCD, String bunText, String jiText) throws SQLException {
    
@@ -68,24 +73,111 @@ public class DBBuildInfo { //리스트 출력 조회용
    
    System.out.println("[정보!] DB 연결 url : "+url);
    System.out.println("[정보!] DB 연결 user : "+user);
+
+   // 주소 데이터를 가져오기 전에 데이터의 크기 조회
+   String checkSql = "  select count(*) " 
+                   + "    from BDT_BLDRGST A " 
+                   + "    left outer join CMC_BJDONG_MGM B on A.SIGUNGU_CD = B.SIGUNGU_CD " 
+                   + "                                    and A.BJDONG_CD  = B.BJDONG_CD  " 
+                   + "   where A.SIGUNGU_CD = '"  + sigunguCD + "' " 
+                   + "     and A.BJDONG_CD  = '"  + bjdongCD  + "' " 
+                   + "     and A.BUN LIKE '%'||'" + bunText   + "'||'%'" 
+                   + "     and A.JI  LIKE '%'||'" + jiText    + "'||'%'" ;
    
-   String sql = " select DISTINCT A.BLD_TYPE_GB_CD, A.MGM_BLD_PK, A.REGSTR_GB_CD, A.REGSTR_KIND_CD, "
-              + "        B.SIDO_NM, B.SIGUNGU_NM, B.BJDONG_NM, A.BUN, A.JI, A.BLD_NM, "
-              + "        C.CD_NM AS MAIN_PURPS_NM, D.CD_NM AS STRCT_NM "
-              + "   from BDT_BLDRGST A "
-              + "   left outer join CMC_BJDONG_MGM B on A.SIGUNGU_CD = B.SIGUNGU_CD " 
-              + "                                   and A.BJDONG_CD  = B.BJDONG_CD " 
-              + "   left outer join (SELECT * FROM CMC_COMM_CD_MGM WHERE LGRP_CD = 'CM024') C on A.MAIN_PURPS_CD = C.SGRP_CD "  
-              + "   left outer join (SELECT * FROM CMC_COMM_CD_MGM WHERE LGRP_CD = 'CM004') D on A.STRCT_CD = D.SGRP_CD "  
-              + "  where A.SIGUNGU_CD = '" + sigunguCD + "'"  
-              + "    and A.BJDONG_CD  = '" + bjdongCD + "'"  
-              + "    and A.BUN LIKE '%'||'" + bunText + "'||'%'"
-              + "    and A.JI  LIKE '%'||'" + jiText  + "'||'%'"
-              + "    and ROWNUM <= 150";
-                   // 최대 150개 까지만 출력 (번지 정보 없을 때)
+   rs = stmt.executeQuery(checkSql);
+   int rowCount = 0;
    
-   rs = stmt.executeQuery(sql);
+   while(rs.next()) {
+   rowCount = rs.getInt("count(*)");
+   }
+   System.out.println("조회된 데이터 갯수 : " + rowCount);
+   System.out.println("bun을 조회 : "+ bunText);
    
+   if(bunText.equals("")) status = 1; 
+   if(rowCount < 300) status = 2;
+   
+     if (rowCount < 300 || bunText.equals("")) { 
+       String sql = " select DISTINCT A.BLD_TYPE_GB_CD, A.MGM_BLD_PK, A.REGSTR_GB_CD, A.REGSTR_KIND_CD, "
+           + "        B.SIDO_NM, B.SIGUNGU_NM, B.BJDONG_NM, A.BUN, A.JI, A.BLD_NM, "
+           + "        C.CD_NM AS MAIN_PURPS_NM, D.CD_NM AS STRCT_NM "
+           + "   from BDT_BLDRGST A "
+           + "   left outer join CMC_BJDONG_MGM B on A.SIGUNGU_CD = B.SIGUNGU_CD " 
+           + "                                   and A.BJDONG_CD  = B.BJDONG_CD " 
+           + "   left outer join (SELECT * FROM CMC_COMM_CD_MGM WHERE LGRP_CD = 'CM024') C on A.MAIN_PURPS_CD = C.SGRP_CD "  
+           + "   left outer join (SELECT * FROM CMC_COMM_CD_MGM WHERE LGRP_CD = 'CM004') D on A.STRCT_CD = D.SGRP_CD "  
+           + "  where A.SIGUNGU_CD = '" + sigunguCD + "'"  
+           + "    and A.BJDONG_CD  = '" + bjdongCD + "'"  
+           + "    and A.BUN LIKE '%'||'" + bunText + "'||'%'"
+           + "    and A.JI  LIKE '%'||'" + jiText  + "'||'%'"
+           + "    and ROWNUM < 301 "
+           + "  ORDER BY REGSTR_KIND_CD ";
+        
+          
+         System.out.println("데이터의 수가 300 미만이거나 번 정보를 입력하지 않으면 최대 300개만 출력.");
+       rs = stmt.executeQuery(sql);
+    } 
+     if(rowCount >= 300 && !bunText.equals("") ) { // 최대 300개 이상이거나 번지 정보가 있다면
+      // 주소 데이터를 가져오기 전에 전유부를 제외한 데이터 갯수 조회.
+      String checkSql2 = "  select count(*) " 
+                       + "    from BDT_BLDRGST A " 
+                       + "    left outer join CMC_BJDONG_MGM B on A.SIGUNGU_CD = B.SIGUNGU_CD " 
+                       + "                                    and A.BJDONG_CD  = B.BJDONG_CD  " 
+                       + "   where A.SIGUNGU_CD = '"  + sigunguCD + "' " 
+                       + "     and A.BJDONG_CD  = '"  + bjdongCD  + "' " 
+                       + "     and A.BUN LIKE '%'||'" + bunText   + "'||'%'" 
+                       + "     and A.JI  LIKE '%'||'" + jiText    + "'||'%'"
+                       + "     and A.REGSTR_KIND_CD NOT LIKE '4' ";
+      
+      rs = stmt.executeQuery(checkSql2);
+      int rowCount2 = 0;
+      
+      while(rs.next()) {
+        rowCount2 = rs.getInt("count(*)");
+        }
+
+      System.out.println("처음조회 데이터가 많아서 해당정보로 전유부를 제외한 데이터의 갯수 : " + rowCount2);
+      
+      if (rowCount2 > 700) {
+        String sql = " select DISTINCT A.BLD_TYPE_GB_CD, A.MGM_BLD_PK, A.REGSTR_GB_CD, A.REGSTR_KIND_CD, "
+            + "        B.SIDO_NM, B.SIGUNGU_NM, B.BJDONG_NM, A.BUN, A.JI, A.BLD_NM, "
+            + "        C.CD_NM AS MAIN_PURPS_NM, D.CD_NM AS STRCT_NM "
+            + "   from BDT_BLDRGST A "
+            + "   left outer join CMC_BJDONG_MGM B on A.SIGUNGU_CD = B.SIGUNGU_CD " 
+            + "                                   and A.BJDONG_CD  = B.BJDONG_CD " 
+            + "   left outer join (SELECT * FROM CMC_COMM_CD_MGM WHERE LGRP_CD = 'CM024') C on A.MAIN_PURPS_CD = C.SGRP_CD "  
+            + "   left outer join (SELECT * FROM CMC_COMM_CD_MGM WHERE LGRP_CD = 'CM004') D on A.STRCT_CD = D.SGRP_CD "  
+            + "  where A.SIGUNGU_CD = '" + sigunguCD + "'"  
+            + "    and A.BJDONG_CD  = '" + bjdongCD + "'"  
+            + "    and A.BUN LIKE '%'||'" + bunText + "'||'%'"
+            + "    and A.JI  LIKE '%'||'" + jiText  + "'||'%'"
+            + "    and A.REGSTR_KIND_CD NOT LIKE '4' "
+            + "    and ROWNUM < 701 "
+            + "  ORDER BY REGSTR_KIND_CD ";
+        
+          status = 3;
+        System.out.println("전유부를 제외하고도 데이터수가 많아서 700개 까지만");
+         rs = stmt.executeQuery(sql);
+         
+      } else { // 전유부를 제외한 수가 700 이하라면 전유부 제외하고 출력
+        String sql = " select DISTINCT A.BLD_TYPE_GB_CD, A.MGM_BLD_PK, A.REGSTR_GB_CD, A.REGSTR_KIND_CD, "
+            + "        B.SIDO_NM, B.SIGUNGU_NM, B.BJDONG_NM, A.BUN, A.JI, A.BLD_NM, "
+            + "        C.CD_NM AS MAIN_PURPS_NM, D.CD_NM AS STRCT_NM "
+            + "   from BDT_BLDRGST A "
+            + "   left outer join CMC_BJDONG_MGM B on A.SIGUNGU_CD = B.SIGUNGU_CD " 
+            + "                                   and A.BJDONG_CD  = B.BJDONG_CD " 
+            + "   left outer join (SELECT * FROM CMC_COMM_CD_MGM WHERE LGRP_CD = 'CM024') C on A.MAIN_PURPS_CD = C.SGRP_CD "  
+            + "   left outer join (SELECT * FROM CMC_COMM_CD_MGM WHERE LGRP_CD = 'CM004') D on A.STRCT_CD = D.SGRP_CD "  
+            + "  where A.SIGUNGU_CD = '" + sigunguCD + "'"  
+            + "    and A.BJDONG_CD  = '" + bjdongCD + "'"  
+            + "    and A.BUN LIKE '%'||'" + bunText + "'||'%'"
+            + "    and A.JI  LIKE '%'||'" + jiText  + "'||'%'"
+            + "    and A.REGSTR_KIND_CD NOT LIKE '4' "
+            + "  ORDER BY REGSTR_KIND_CD ";
+        
+        status = 4;
+        rs = stmt.executeQuery(sql);
+      }
+    } 
    List<BuildInfo> buildingList = new ArrayList<>();
 
    while(rs.next()) {

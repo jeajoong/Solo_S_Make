@@ -2,7 +2,7 @@ package com.application.vo;
 
 import java.math.BigDecimal;
 
-public class Floor { // 층별정보 VO(모든 컬럼 값 받을 수 있음)
+public class Floor { // 층별정보 VO(테이블의 컬렁과 동일)
   
   private String bldTypeGBCD;
   private String buildingPK;

@@ -65,34 +65,46 @@ public class Build { // 조인된 쿼리 내용 추가한 건축물대장 VO객�
   private String naSubBun;     // 새주소 부번
   private String operSrvrRflcYN;// 운영서버 반영여부
   
+  private String mainAtchGBCD;  // 주건물 구분코드
   
+  // 동 정보를 가져오기 위해서 추가적으로 생성. 테이블에 없는 항목.
+  private String platNewLoc;    // 전체새주소 
+  // 쿼리 조합
+  //N.SIDO_NM||' '||N.SIGUNGU_NM||' '||N.NA_ROAD_NM|| ' ' ||
+  //N.NA_MAIN_BUN || DECODE(N.NA_SUB_BUN, '0', '', '-')||
+  //DECODE(N.NA_SUB_BUN, '0','') AS PLAT_NEW_LOC
+  
+  // 지상 + 지하 층수 관련
+  private int upDownCNT; // 지상층수 + 지하층수
+  
+
   @Override
   public String toString() {
-    return "IilBanBuild [bldTypeGBCD=" + bldTypeGBCD + ", buildingPK=" + buildingPK
-        + ", regstrGBCD=" + regstrGBCD + ", regstrKINKCD=" + regstrKINKCD + ", regstrNo=" + regstrNo
-        + ", bldNM=" + bldNM + ", spcmt=" + spcmt + ", platLoC=" + platLoC + ", jiBun=" + jiBun
-        + ", platArea=" + platArea + ", totArea=" + totArea + ", archArea=" + archArea
-        + ", vlRatEstmTotArea=" + vlRatEstmTotArea + ", strctNM=" + strctNM + ", strctCD=" + strctCD
-        + ", mainPurpsNM=" + mainPurpsNM + ", mainPurpsCD=" + mainPurpsCD + ", grndFlrCNT="
-        + grndFlrCNT + ", ugrndFlrCNT=" + ugrndFlrCNT + ", bcRat=" + bcRat + ", vlRat=" + vlRat
-        + ", heit=" + heit + ", roofNM=" + roofNM + ", roofCD=" + roofCD + ", atchBldCnt="
-        + atchBldCnt + ", sigunguCD=" + sigunguCD + ", bjdongCD=" + bjdongCD + ", hjdongCD="
-        + hjdongCD + ", platGBCD=" + platGBCD + ", bunNum=" + bunNum + ", jiNum=" + jiNum
-        + ", byLotCNT=" + byLotCNT + ", dongNM=" + dongNM + ", hoNM=" + hoNM + ", dongCD=" + dongCD
-        + ", hoCD=" + hoCD + ", etcrcdITEM=" + etcrcdITEM + ", violbldYN=" + violbldYN
-        + ", regstrSEQNO=" + regstrSEQNO + ", etcPurps=" + etcPurps + ", etcStruct=" + etcStruct
-        + ", etcRoof=" + etcRoof + ", hhldCNT=" + hhldCNT + ", fmlyCNT=" + fmlyCNT + ", hoCNT="
-        + hoCNT + ", mainBldCnt=" + mainBldCnt + ", atchBldArea=" + atchBldArea + ", totPkngCNT="
-        + totPkngCNT + ", naRoadCD=" + naRoadCD + ", naBjdongCD=" + naBjdongCD + ", naGrndUgrndCD="
+    return "Build [bldTypeGBCD=" + bldTypeGBCD + ", buildingPK=" + buildingPK + ", regstrGBCD="
+        + regstrGBCD + ", regstrKINKCD=" + regstrKINKCD + ", regstrNo=" + regstrNo + ", bldNM="
+        + bldNM + ", spcmt=" + spcmt + ", platLoC=" + platLoC + ", jiBun=" + jiBun + ", platArea="
+        + platArea + ", totArea=" + totArea + ", archArea=" + archArea + ", vlRatEstmTotArea="
+        + vlRatEstmTotArea + ", strctNM=" + strctNM + ", strctCD=" + strctCD + ", mainPurpsNM="
+        + mainPurpsNM + ", mainPurpsCD=" + mainPurpsCD + ", grndFlrCNT=" + grndFlrCNT
+        + ", ugrndFlrCNT=" + ugrndFlrCNT + ", bcRat=" + bcRat + ", vlRat=" + vlRat + ", heit="
+        + heit + ", roofNM=" + roofNM + ", roofCD=" + roofCD + ", atchBldCnt=" + atchBldCnt
+        + ", hoCNT=" + hoCNT + ", totPkngCNT=" + totPkngCNT + ", mainBldCnt=" + mainBldCnt
+        + ", sigunguCD=" + sigunguCD + ", bjdongCD=" + bjdongCD + ", hjdongCD=" + hjdongCD
+        + ", platGBCD=" + platGBCD + ", bunNum=" + bunNum + ", jiNum=" + jiNum + ", byLotCNT="
+        + byLotCNT + ", dongNM=" + dongNM + ", hoNM=" + hoNM + ", dongCD=" + dongCD + ", hoCD="
+        + hoCD + ", etcrcdITEM=" + etcrcdITEM + ", violbldYN=" + violbldYN + ", regstrSEQNO="
+        + regstrSEQNO + ", etcPurps=" + etcPurps + ", etcStruct=" + etcStruct + ", etcRoof="
+        + etcRoof + ", hhldCNT=" + hhldCNT + ", fmlyCNT=" + fmlyCNT + ", atchBldArea=" + atchBldArea
+        + ", naRoadCD=" + naRoadCD + ", naBjdongCD=" + naBjdongCD + ", naGrndUgrndCD="
         + naGrndUgrndCD + ", naMainBun=" + naMainBun + ", naSubBun=" + naSubBun
-        + ", operSrvrRflcYN=" + operSrvrRflcYN + "]";
+        + ", operSrvrRflcYN=" + operSrvrRflcYN + ", mainAtchGBCD=" + mainAtchGBCD + ", platNewLoc="
+        + platNewLoc + ", upDownCNT=" + upDownCNT + "]";
   }
 
-
+  
   public String getBldTypeGBCD() {
     return bldTypeGBCD;
   }
-
 
   public void setBldTypeGBCD(String bldTypeGBCD) {
     this.bldTypeGBCD = bldTypeGBCD;
@@ -626,6 +638,30 @@ public class Build { // 조인된 쿼리 내용 추가한 건축물대장 VO객�
 
   public void setOperSrvrRflcYN(String operSrvrRflcYN) {
     this.operSrvrRflcYN = operSrvrRflcYN;
+  }
+
+  public String getMainAtchGBCD() {
+    return mainAtchGBCD;
+  }
+
+  public void setMainAtchGBCD(String mainAtchGBCD) {
+    this.mainAtchGBCD = mainAtchGBCD;
+  }
+
+  public String getPlatNewLoc() {
+    return platNewLoc;
+  }
+
+  public void setPlatNewLoc(String platNewLoc) {
+    this.platNewLoc = platNewLoc;
+  }
+
+  public int getUpDownCNT() {
+    return upDownCNT;
+  }
+
+  public void setUpDownCNT(int upDownCNT) {
+    this.upDownCNT = upDownCNT;
   }
   
   

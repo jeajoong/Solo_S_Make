@@ -1,6 +1,6 @@
 package com.application.vo;
 
-public class Address {
+public class Address { // 주소를 찾을 때 사용할 VO
 
   private String sidoNM;
   private String sigunguNM;
@@ -13,9 +13,6 @@ public class Address {
   private String applyExpDay;
   
   
-
-
-
   @Override
   public String toString() {
     return "Address [sidoNM=" + sidoNM + ", sigunguNM=" + sigunguNM + ", bjdongNM=" + bjdongNM

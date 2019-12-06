@@ -174,8 +174,8 @@ public class LoginForm extends JFrame implements ActionListener{
     }
      
     }else if(btn==btnSubmit){
-     idText.setText(" ");
-     pwdText.setText(" ");
+     idText.setText("");
+     pwdText.setText("");
      idText.requestFocus(); // 이름 텍스트 창에 포커스 맞추기
      
     }else if(btn==btnExit){

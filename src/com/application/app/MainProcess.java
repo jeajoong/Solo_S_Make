@@ -8,10 +8,10 @@ public class MainProcess {
   
   Member member;
   LoginForm loginForm;
-  MainPage mainPage;
+  SearchBuild searchPage;
   DetailForm detailForm;   // 일반건축물대장
   DetailForm2 detailForm2; // 총괄표제부
-  //DetailForm3 detailForm3; // 집합표제부
+  DetailForm3 detailForm3; // 집합표제부
   //DetailForm4 detailForm4; // 전유부
   MainProcess main;
   
@@ -38,9 +38,9 @@ public class MainProcess {
     loginForm.dispose();
     
     this.main = main;
-    this.mainPage = new MainPage();
-    mainPage.setMember(member);
-    mainPage.setMain(main);
+    this.searchPage = new SearchBuild();
+    searchPage.setMember(member);
+    searchPage.setMain(main);
   }
 
   
@@ -50,9 +50,9 @@ public class MainProcess {
   public void createDetailForm2() {
     this.detailForm2 = new DetailForm2();
   }
-//  public void createDetailForm3() {
-//    this.detailForm3 = new DetailForm3();
-//  }
+  public void createDetailForm3() {
+    this.detailForm3 = new DetailForm3();
+  }
 //  public void createDetailForm4() {
 //    this.detailForm4 = new DetailForm4();
 //  }
@@ -62,9 +62,9 @@ public class MainProcess {
   
   // 일반건축물
   public void showDetailForm(BuildInfo buildInfo) {
-    mainPage.dispose();
+    searchPage.dispose();
     detailForm.setMain(main);
-    detailForm.setMainPage(mainPage);
+    detailForm.setSearchPage(searchPage);
     detailForm.setDetailForm(detailForm);
     detailForm.setBuildInfo(buildInfo);
   
@@ -72,15 +72,21 @@ public class MainProcess {
   
   // 총괄표제부
   public void showDetailForm2(BuildInfo buildInfo) {
-    mainPage.dispose();
-    System.out.println(main);
+    searchPage.dispose();
     detailForm2.setMain(main);
-    detailForm2.setMainPage(mainPage);
+    detailForm2.setSearchPage(searchPage);
     detailForm2.setDetailForm2(detailForm2);
     detailForm2.setBuildInfo(buildInfo);
   }
   
-  
+  // 집합표제부
+  public void showDetailForm3(BuildInfo buildInfo) {
+    searchPage.dispose();
+    detailForm3.setMain(main);
+    detailForm3.setSearchPage(searchPage);
+    detailForm3.setDetailForm3(detailForm3);
+    detailForm3.setBuildInfo(buildInfo);
+  }
   
   
 
