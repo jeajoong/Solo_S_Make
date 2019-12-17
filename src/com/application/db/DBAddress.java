@@ -7,18 +7,21 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import com.application.dto.BuildInfo;
 
-public class DBAddress { // 시도,시군구,법정동 콤보박스를 선택했을때 처리할 DB관련 클래스
+//시도,시군구,법정동 콤보박스를 선택했을때 처리할 DB관련 클래스
+public class DBAddress { 
   
   String driver = "oracle.jdbc.driver.OracleDriver";
   String url = "jdbc:oracle:thin:@localhost:1521:nbem2";
   String user = "nbem2_adm";
   String password = "nbem02";
   
-  Connection conn = null;
-  Statement stmt = null;
-  ResultSet rs = null;
+  Connection conn = null; // Connection 객체는 데이터베이스와 연결하는 객체 (Statement 객체를 생성할 때도 Connection 객체를 사용)
+  Statement stmt = null;  // 특정한 SQL 문장을 정의하고 실행 시킬 수 있는 Statement
+  ResultSet rs = null;    // SELECT 문을 사용시 결과를 담는 객체.
   
   public DBAddress() {
     try {
@@ -30,25 +33,14 @@ public class DBAddress { // 시도,시군구,법정동 콤보박스를 선택했
     }
   }
   
-  
   public void closeDatabase() {
-      try {
-        if(conn != null && !conn.isClosed()) {
-          conn.close();
-          System.out.println("db 자원 종료");
-        }
-        if(stmt != null && !stmt.isClosed()) {
-          stmt.close();
-          System.out.println("db 자원 종료");
-        }
-        if(rs != null && !rs.isClosed()) {
-          rs.close();
-          System.out.println("db 자원 종료");
-        }
-      }
-      catch (SQLException e) {
-          System.out.println("[닫기 오류]\n" + e.getStackTrace());
-      }
+    try {
+      rs.close();
+      stmt.close();
+      conn.close();
+    } catch (SQLException e) {
+      e.printStackTrace();
+    }
   }
   
   
@@ -66,6 +58,7 @@ public class DBAddress { // 시도,시군구,법정동 콤보박스를 선택했
     // 3) 원하는 결과는 쿼리로써 마무리 짓고, java 코드로 후작업하는 것은 권하지 않음
     // 4) 쿼리를 한 줄로 쓰기 어려운 경우 들여쓰기를 사용해도 되지만 띄어쓰기에 유의!!
     // 테이블명과 where 사이의 공백이 필요하거나 작은따옴표도 필요한지 생각해야함.
+    
     String sql = " select DISTINCT SIGUNGU_NM "
                + "   from CMC_BJDONG_MGM "
                + "  where SIDO_NM = '"+ sidoNM +"'"
@@ -80,11 +73,9 @@ public class DBAddress { // 시도,시군구,법정동 콤보박스를 선택했
     
     sigunguList.removeAll(Collections.singleton(null));
     
+    closeDatabase();
     return sigunguList;
   }
-  
-  
-  
   
   // 해당하는 시도의 시군구의 법정동을 찾기위한 메서드 (예외상황 처리x)
   public List<Object> findBjdongNM(String sidoSelect, String firstSigunguName) throws SQLException {
@@ -122,6 +113,8 @@ public class DBAddress { // 시도,시군구,법정동 콤보박스를 선택했
       bjdongList.add(rs.getString("BJDONG_NM"));
     }
     
+    
+    closeDatabase();
     return bjdongList;
   }
   
@@ -154,11 +147,11 @@ public class DBAddress { // 시도,시군구,법정동 콤보박스를 선택했
     }
     
     String sigunguCD = null;
-    // 만약에 쿼리 조회 후 두개이상의 값이 존재하면 예외없이 한개의 값만 받게 되는 상황이므로 예외를 만들어야 함.
     while(rs.next()) {
       sigunguCD = rs.getString("SIGUNGU_CD");
     }
     
+    closeDatabase();
     return sigunguCD;
   }
   
@@ -184,22 +177,21 @@ public class DBAddress { // 시도,시군구,법정동 콤보박스를 선택했
     // 법정동 테이블에 시도명이 "세종특별자치시" 일 때 SIGUNGU_NM의 값이 없음 그래서 BJDONG_CD값을 조회할때 SIGUNGU_NM을 제외해야 함.
     if(sigunguNM == "세종특별자치시") {
       String sql = " select DISTINCT BJDONG_CD "
-          + "   from CMC_BJDONG_MGM "  
-          + "  where SIDO_NM    = '" + sidoNM + "'"
-          + "    and BJDONG_NM  = '" + bjdongNM + "'"
-          + "    and APPLY_EXP_DAY = '99991231'";
+                 + "   from CMC_BJDONG_MGM "  
+                 + "  where SIDO_NM    = '" + sidoNM + "'"
+                 + "    and BJDONG_NM  = '" + bjdongNM + "'"
+                 + "    and APPLY_EXP_DAY = '99991231'";
 
       rs = stmt.executeQuery(sql);
     }
     
     String bjdongCD = null;
-    // 만약에 쿼리 조회 후 두개이상의 값이 존재하면 예외없이 한개의 값만 받게 되는 상황이므로 예외를 만들어야 함.
     while(rs.next()) {
       bjdongCD = rs.getString("BJDONG_CD");
     }
     
+    closeDatabase();
     return bjdongCD;
-    
   }
 
 

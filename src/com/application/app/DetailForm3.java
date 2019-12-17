@@ -2,6 +2,7 @@ package com.application.app;
 
 import java.awt.BorderLayout;
 import java.awt.Choice;
+import java.awt.Color;
 import java.awt.Desktop;
 import java.awt.EventQueue;
 import java.awt.Font;
@@ -20,19 +21,26 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.WindowConstants;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import org.apache.poi.ss.usermodel.PrintSetup;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import com.application.db.DBBuildDetail;
-import com.application.vo.Build;
-import com.application.vo.BuildInfo;
-import com.application.vo.Floor;
+import com.application.dto.Build;
+import com.application.dto.BuildInfo;
+import com.application.dto.Floor;
+import com.application.dto.Member;
+import com.application.requireClass.MainPurpsArray;
+import com.application.requireClass.RoofArray;
+import com.application.requireClass.StrctArray;
+import keeptoo.KGradientPanel;
 
 // DetailForm3 => 표제부  대장종류 (번호) : 3
 // 각 항목 변수이름 지정해주지 않음
@@ -44,6 +52,7 @@ public class DetailForm3 extends JFrame implements ActionListener{
   BuildInfo buildInfo;
   Build build;
   SearchBuild searchPage;
+  Member member;
   DetailForm3 detailForm3;
   DBBuildDetail dbBuildDetail = new DBBuildDetail();
   
@@ -53,101 +62,105 @@ public class DetailForm3 extends JFrame implements ActionListener{
   public DetailForm3() {
     dtlform();
     returnBtn.addActionListener(this);
+    reviseBtn.addActionListener(this);
     printBtn.addActionListener(this);
     
     jComboBox1.addActionListener(this);
     jComboBox2.addActionListener(this);
     jComboBox4.addActionListener(this);
                
-    jComboBox3.addActionListener(this);
-    jComboBox11.addActionListener(this);
+    mainPurpsNMComboBox.addActionListener(this);
+    mainPurpsCDComboBox.addActionListener(this);
                
-    jComboBox6.addActionListener(this);
+    grndFlrNMComboBox.addActionListener(this);
                
-    jComboBox8.addActionListener(this);
-    jComboBox7.addActionListener(this);
+    strctNMComboBox.addActionListener(this);
+    strctCDComboBox.addActionListener(this);
         
-    jComboBox9.addActionListener(this);
-    jComboBox10.addActionListener(this);
+    roofNMComboBox.addActionListener(this);
+    roofCDComboBox.addActionListener(this);
+    
     setVisible(true);
   }
   
   JButton returnBtn = new JButton(); // 돌아가기 버튼(searchPage로)
-  JButton jButton2 = new JButton();
+  JButton reviseBtn = new JButton();
   JButton printBtn = new JButton(); // 출력버튼
   
   JScrollPane jScrollPane1 = new JScrollPane();
   JTable jTable1 = new JTable();
-  JLabel jLabel1 = new JLabel();
+  JLabel entirLbl = new JLabel();
   JLabel jLabel3 = new JLabel();
   List list2 = new List();
   List list3 = new List();
-  JLabel jLabel5 = new JLabel();
-  JLabel jLabel6 = new JLabel();
-  JLabel jLabel7 = new JLabel();
-  JLabel jLabel8 = new JLabel();
-  JTextField jTextField1 = new JTextField();
-  JTextField jTextField2 = new JTextField();
-  JTextField jTextField3 = new JTextField();
-  JLabel jLabel9 = new JLabel();
-  JLabel jLabel10 = new JLabel();
-  JLabel jLabel11 = new JLabel();
-  JLabel jLabel12 = new JLabel();
+  JLabel regstrLbl = new JLabel();
+  JLabel platLocLbl = new JLabel();
+  JLabel jiBunLbl = new JLabel();
+  JLabel platNewLocLbl = new JLabel();
+  JTextField platLocField = new JTextField();
+  JTextField jiBunField = new JTextField();
+  JTextField platNewLocField = new JTextField();
+  JLabel platAreaLbl = new JLabel();
+  JLabel archAreaLbl = new JLabel();
+  JLabel bcRatLbl = new JLabel();
+  JLabel totAreaLbl = new JLabel();
   JLabel jLabel13 = new JLabel();
   JLabel jLabel14 = new JLabel();
   JLabel jLabel15 = new JLabel();
-  JLabel jLabel16 = new JLabel();
-  JLabel jLabel17 = new JLabel();
-  JLabel jLabel18 = new JLabel();
-  JLabel jLabel19 = new JLabel();
+  JLabel vlRatEstmTotAreaLbl = new JLabel();
+  JLabel strctLbl = new JLabel();
+  JLabel mainPurpsLbl = new JLabel();
+  JLabel grndFlrCntLbl = new JLabel();
   JLabel jLabel20 = new JLabel();
-  JLabel jLabel21 = new JLabel();
-  JLabel jLabel22 = new JLabel();
-  JLabel jLabel23 = new JLabel();
-  JLabel jLabel24 = new JLabel();
-  JLabel jLabel25 = new JLabel();
+  JLabel buildInfoLbl = new JLabel();
+  JLabel vlRatLbl = new JLabel();
+  JLabel heitLbl = new JLabel();
+  JLabel roofLbl = new JLabel();
+  JLabel atchBldLbl = new JLabel();
   JLabel jLabel26 = new JLabel();
   JLabel jLabel27 = new JLabel();
   JLabel jLabel28 = new JLabel();
-  JTextField jTextField4 = new JTextField();
-  JTextField jTextField5 = new JTextField();
-  JLabel jLabel2 = new JLabel();
-  JLabel jLabel29 = new JLabel();
-  JTextField jTextField6 = new JTextField();
-  JTextField jTextField7 = new JTextField();
-  JTextField jTextField8 = new JTextField();
-  JTextField jTextField9 = new JTextField();
-  JTextField jTextField10 = new JTextField();
+  JTextField platAreaField = new JTextField();
+  JTextField regstrField = new JTextField();
+  JLabel bldNMLbl = new JLabel();
+  JLabel hoCntLbl = new JLabel();
+  JTextField bldNMField = new JTextField();
+  JTextField hoCntField = new JTextField();
+  JTextField archAreaField = new JTextField();
+  JTextField totAreaField = new JTextField();
+  JTextField grndFlrField = new JTextField();
   JTextField jTextField11 = new JTextField();
   JTextField jTextField12 = new JTextField();
-  JTextField jTextField13 = new JTextField();
-  JTextField jTextField14 = new JTextField();
+  JTextField vlRatEstmTotAreaField = new JTextField();
+  JTextField bcRatField = new JTextField();
   JTextField jTextField15 = new JTextField();
-  JTextField jTextField16 = new JTextField();
+  JTextField vlRatField = new JTextField();
   JTextField jTextField17 = new JTextField();
   JTextField jTextField18 = new JTextField();
-  JTextField jTextField19 = new JTextField();
+  JTextField heitField = new JTextField();
   JTextField jTextField20 = new JTextField();
   JTextField jTextField22 = new JTextField();
   JTextField jTextField23 = new JTextField();
-  JTextField jTextField24 = new JTextField();
+  JTextField atchBldField = new JTextField();
   JTextField jTextField25 = new JTextField();
   Choice choice1 = new Choice();
   
   JComboBox jComboBox1 = new JComboBox(); // 지역 콤보박스
   JComboBox jComboBox2 = new JComboBox(); // 지구 콤보박스
   JComboBox jComboBox4 = new JComboBox(); // 구역 콤보박스
-  JComboBox jComboBox8 = new JComboBox(); // 주구조1(명칭)
-  JComboBox jComboBox7 = new JComboBox(); // 주구조2(코드)
-  JComboBox jComboBox3 = new JComboBox();  // 주용도 콤보박스
-  JComboBox jComboBox11 = new JComboBox(); // 주용도코드 콤보박스
-  JComboBox jComboBox6 = new JComboBox(); // 층수 지상/지하 콤보박스
-  JComboBox jComboBox9 = new JComboBox(); // 지붕명칭
-  JComboBox jComboBox10 = new JComboBox(); // 지붕코드
+  JComboBox strctNMComboBox = new JComboBox(); // 주구조1(명칭)
+  JComboBox strctCDComboBox = new JComboBox(); // 주구조2(코드)
+  JComboBox mainPurpsNMComboBox = new JComboBox();  // 주용도 콤보박스
+  JComboBox mainPurpsCDComboBox = new JComboBox(); // 주용도코드 콤보박스
+  JComboBox grndFlrNMComboBox = new JComboBox(); // 층수 지상/지하 콤보박스
+  JComboBox roofNMComboBox = new JComboBox(); // 지붕명칭
+  JComboBox roofCDComboBox = new JComboBox(); // 지붕코드
   
-  DefaultTableModel model1 = new DefaultTableModel(); //층별정보 모델1
+  KGradientPanel kGradientPanel1 = new KGradientPanel();
+  
+  DefaultTableModel floorModel = new DefaultTableModel(); //층별정보 모델1
   JScrollPane jScrollPane2 = new JScrollPane(); 
-  JTable jTable2 = new JTable(model1);  // 층별정보 테이블
+  JTable floorInfoTable = new JTable(floorModel);  // 층별정보 테이블
   
   
   private void dtlform() {
@@ -155,48 +168,61 @@ public class DetailForm3 extends JFrame implements ActionListener{
     setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
     returnBtn.setText("돌아가기");              // (리스트) 돌아가기 버튼
-    jButton2.setText("수정하기");               // 수정하기 버튼
+    reviseBtn.setText("수정하기");               // 수정하기 버튼
     printBtn.setText("엑셀저장 후 인쇄");          // 인쇄하기 버튼
     
-    jLabel1.setText("해당 주소의 전체주소 ");        // 상단 전체주소 라벨
-    jLabel21.setText("집합건축물대장(표제부)");           // 일반건축물대장 라벨
+    entirLbl.setText("해당 주소의 전체주소 ");        // 상단 전체주소 라벨
+    buildInfoLbl.setText("집합건축물대장(표제부)");  // 일반건축물대장 라벨
     
-    jLabel5.setText("대장_일련번호");            // 대장 일련번호 라벨
-    jTextField5.setText("대장_일련번호");        // 대장 일련번호 텍스트구역
-    jLabel2.setText("명칭");                  // 명칭 라벨
-    jTextField6.setText("명칭");              // 명칭 텍스트구역
-    jLabel29.setText("호 수");                 // 호 수 라벨
-    jTextField7.setText("호 수");              // 호 수 텍스트구역
-    jLabel6.setText("대지위치");               // 대지위치 라벨
-    jTextField1.setText("대지위치");           // 대지위치 텍스트구역
-    jLabel7.setText("지번");                  // 지번 라벨
-    jTextField2.setText("지번");              // 지번 텍스트구역
-    jLabel8.setText("도로명주소");              // 도로명주소 라벨
-    jTextField3.setText("도로명주소");          // 도로명주소 텍스트구역
-    jLabel9.setText("대지면적");               // 대지면적 라벨
-    jTextField4.setText("대지면적");           // 대지면적 텍스트구역
-    jLabel12.setText("연면적");               // 연면적 라벨
-    jTextField9.setText("연면적");            // 연면적 텍스트구역
+    regstrLbl.setText("대장_일련번호");            // 대장 일련번호 라벨
+    regstrField.setText("대장_일련번호");        // 대장 일련번호 텍스트구역
+    regstrField.setEnabled(false);
+    
+    bldNMLbl.setText("명칭");                  // 명칭 라벨
+    bldNMField.setText("명칭");              // 명칭 텍스트구역
+    hoCntLbl.setText("호 수");                 // 호 수 라벨
+    hoCntField.setText("호 수");              // 호 수 텍스트구역
+    platLocLbl.setText("대지위치");               // 대지위치 라벨
+    platLocField.setText("대지위치");           // 대지위치 텍스트구역
+    platLocField.setEnabled(false);
+
+    jiBunLbl.setText("지번");                  // 지번 라벨
+    jiBunField.setText("지번");              // 지번 텍스트구역
+    jiBunField.setEnabled(false);
+
+    platNewLocLbl.setText("도로명주소");              // 도로명주소 라벨
+    platNewLocField.setText("도로명주소");          // 도로명주소 텍스트구역
+    platNewLocField.setEnabled(false);
+    
+    platAreaLbl.setText("대지면적");               // 대지면적 라벨
+    platAreaField.setText("대지면적");           // 대지면적 텍스트구역
+    totAreaLbl.setText("연면적");               // 연면적 라벨
+    totAreaField.setText("연면적");            // 연면적 텍스트구역
+    
     jLabel13.setText("지역");                // 지역 라벨
     jLabel14.setText("지구");                // 지구 라벨
     jLabel15.setText("구역");                // 구역 라벨
-    jLabel10.setText("건축면적");             // 건축면적 라벨
-    jTextField8.setText("건축면적");          // 건축면적 텍스트구역
-    jLabel16.setText("용적률산정용연면적");      // 용적률 산정용 연면적 라벨
-    jTextField13.setText("용적률산정용");      // 용적률 산정용 연면적 텍스트구역
-    jLabel17.setText("주구조");              // 주구조 라벨   
-    jLabel18.setText("주용도");              // 주용도 라벨
-    jLabel19.setText("층수");               // 층수 라벨
-    jTextField10.setText("층수");           // 층수 텍스트구역
-    jLabel11.setText("건폐율");              // 건폐율 라벨
-    jTextField14.setText("건폐율");          // 건폐율 텍스트구역
-    jLabel22.setText("용적률");              // 용적률 라벨
-    jTextField16.setText("용적률");          // 용적률 텍스트구역
-    jLabel23.setText("높이");               // 높이 라벨
-    jTextField19.setText("높이");           // 높이 텍스트구역
-    jLabel24.setText("지붕");               // 지붕 라벨
-    jLabel25.setText("부속건축물");           // 부속건축물 라벨
-    jTextField24.setText("부속건축물");       // 부속건축물 텍스트구역
+    
+    archAreaLbl.setText("건축면적");             // 건축면적 라벨
+    archAreaField.setText("건축면적");          // 건축면적 텍스트구역
+    vlRatEstmTotAreaLbl.setText("용적률산정용연면적");      // 용적률 산정용 연면적 라벨
+    vlRatEstmTotAreaField.setText("용적률산정용");      // 용적률 산정용 연면적 텍스트구역
+    strctLbl.setText("주구조");              // 주구조 라벨   
+    mainPurpsLbl.setText("주용도");              // 주용도 라벨
+    grndFlrCntLbl.setText("층수");               // 층수 라벨
+    grndFlrField.setText("층수");           // 층수 텍스트구역
+    grndFlrField.setText(Integer.toString(grndFlr));
+    
+    bcRatLbl.setText("건폐율");              // 건폐율 라벨
+    bcRatField.setText("건폐율");          // 건폐율 텍스트구역
+    vlRatLbl.setText("용적률");              // 용적률 라벨
+    vlRatField.setText("용적률");          // 용적률 텍스트구역
+    heitLbl.setText("높이");               // 높이 라벨
+    heitField.setText("높이");           // 높이 텍스트구역
+    roofLbl.setText("지붕");               // 지붕 라벨
+    atchBldLbl.setText("부속건축물");           // 부속건축물 라벨
+    atchBldField.setText("부속건축물");       // 부속건축물 텍스트구역
+    
     jLabel20.setText("조경면적");            // 조경면적 라벨
     jTextField15.setText("조경면적");        // 조경면적 텍스트구역
     jLabel26.setText("공개 공간의 면적");       //  공개 공간의 면적 라벨
@@ -209,52 +235,78 @@ public class DetailForm3 extends JFrame implements ActionListener{
     
     jLabel3.setText("건축물현황");         // 건축물현황 라벨
     
-    jLabel21.setFont(new Font("굴림", 1, 15)); 
-    jLabel16.setFont(new Font("굴림", 0, 10));
-    jLabel18.setFont(new Font("굴림", 0, 11)); 
+    buildInfoLbl.setFont(new Font("굴림", 1, 15)); 
+    vlRatEstmTotAreaLbl.setFont(new Font("굴림", 0, 10));
+    mainPurpsLbl.setFont(new Font("굴림", 0, 11)); 
     jLabel26.setFont(new Font("굴림", 0, 10));
 
     jComboBox1.setModel(new DefaultComboBoxModel(new String[] { "지역"}));
     jComboBox2.setModel(new DefaultComboBoxModel(new String[] { "지구"}));
     jComboBox4.setModel(new DefaultComboBoxModel(new String[] { "구역"}));
 
-    jComboBox3.setModel(new DefaultComboBoxModel(new String[] { "주용도"}));
-    jComboBox11.setModel(new DefaultComboBoxModel(new String[] { "주용도코드"}));
+    mainPurpsNMComboBox.setModel(new DefaultComboBoxModel(new String[] { "주용도"}));
+    mainPurpsCDComboBox.setModel(new DefaultComboBoxModel(new String[] { "주용도코드"}));
 
-    jComboBox6.setModel(new DefaultComboBoxModel(new String[] { "지상", "지하"}));
+    grndFlrNMComboBox.setModel(new DefaultComboBoxModel(new String[] { "지상", "지하"}));
 
-    jComboBox8.setModel(new DefaultComboBoxModel(new String[] { "주구조명칭"}));
-    jComboBox7.setModel(new DefaultComboBoxModel(new String[] { "코드" }));
+    strctNMComboBox.setModel(new DefaultComboBoxModel(new String[] { "주구조명칭"}));
+    strctCDComboBox.setModel(new DefaultComboBoxModel(new String[] { "코드" }));
 
-    jComboBox9.setModel(new DefaultComboBoxModel(new String[] { "지붕명칭"}));
-    jComboBox10.setModel(new DefaultComboBoxModel(new String[] { "코드"}));
+    roofNMComboBox.setModel(new DefaultComboBoxModel(new String[] { "지붕명칭"}));
+    roofCDComboBox.setModel(new DefaultComboBoxModel(new String[] { "코드"}));
 
 
-    model1.addColumn("구분");
-    model1.addColumn("층별");
-    model1.addColumn("구조");
-    model1.addColumn("용도");
-    model1.addColumn("면적(㎡)");
+    floorModel.addColumn("구분");
+    floorModel.addColumn("층별");
+    floorModel.addColumn("구조");
+    floorModel.addColumn("용도");
+    floorModel.addColumn("면적(㎡)");
     
-      jScrollPane2.setViewportView(jTable2);
+      jScrollPane2.setViewportView(floorInfoTable);
       add(jScrollPane2,BorderLayout.CENTER);
-      jTable2.setRowHeight(25);
+      floorInfoTable.setRowHeight(25);
       
-      jTable2.getTableHeader().setReorderingAllowed(false); // 층별정보 테이블 컬럼 이동불가하게 만듦
+      floorInfoTable.getColumn("구분").setPreferredWidth(50);
+      floorInfoTable.getColumn("층별").setPreferredWidth(50);
+      floorInfoTable.getColumn("구조").setPreferredWidth(110);
+      floorInfoTable.getColumn("용도").setPreferredWidth(160);
+      floorInfoTable.getColumn("면적(㎡)").setPreferredWidth(50);
       
+      DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+      centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+      floorInfoTable.getColumnModel().getColumn(0).setCellRenderer(centerRenderer);
+      floorInfoTable.getColumnModel().getColumn(1).setCellRenderer(centerRenderer);
       
-    
+      floorInfoTable.getTableHeader().setReorderingAllowed(false); // 층별정보 테이블 컬럼 이동불가하게 만듦
+      jTable1.setAutoCreateRowSorter(true); // 정렬기능 추가
+      floorInfoTable.setAutoCreateRowSorter(true); // 정렬기능 추가
+      
+      kGradientPanel1.setkEndColor(new Color(255, 255, 153));
+      kGradientPanel1.setkStartColor(new Color(0, 153, 153));
+      
+      // 디자인 설정구간
+      javax.swing.GroupLayout kGradientPanel1Layout = new javax.swing.GroupLayout(kGradientPanel1);
+      kGradientPanel1.setLayout(kGradientPanel1Layout);
+      kGradientPanel1Layout.setHorizontalGroup(
+          kGradientPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+          .addGap(0, 1100, Short.MAX_VALUE)
+      );
+      kGradientPanel1Layout.setVerticalGroup(
+          kGradientPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+          .addGap(0, 600, Short.MAX_VALUE)
+      );
+      
       javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
       getContentPane().setLayout(layout);
       layout.setHorizontalGroup(
           layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
           .addGroup(layout.createSequentialGroup()
               .addGap(110, 110, 110)
-              .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 710, javax.swing.GroupLayout.PREFERRED_SIZE)
+              .addComponent(entirLbl, javax.swing.GroupLayout.PREFERRED_SIZE, 710, javax.swing.GroupLayout.PREFERRED_SIZE)
               .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
               .addComponent(returnBtn)
               .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-              .addComponent(jButton2)
+              .addComponent(reviseBtn)
               .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
               .addComponent(printBtn)
               .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -263,44 +315,44 @@ public class DetailForm3 extends JFrame implements ActionListener{
                   .addGroup(layout.createSequentialGroup()
                       .addGap(40, 40, 40)
                       .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                          .addComponent(jLabel5)
-                          .addComponent(jLabel6))
+                          .addComponent(regstrLbl)
+                          .addComponent(platLocLbl))
                       .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                       .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                           .addGroup(layout.createSequentialGroup()
-                              .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 229, javax.swing.GroupLayout.PREFERRED_SIZE)
+                              .addComponent(platLocField, javax.swing.GroupLayout.PREFERRED_SIZE, 229, javax.swing.GroupLayout.PREFERRED_SIZE)
                               .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                              .addComponent(jLabel7)
+                              .addComponent(jiBunLbl)
                               .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                              .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, 211, javax.swing.GroupLayout.PREFERRED_SIZE)
+                              .addComponent(jiBunField, javax.swing.GroupLayout.PREFERRED_SIZE, 211, javax.swing.GroupLayout.PREFERRED_SIZE)
                               .addGap(27, 27, 27)
-                              .addComponent(jLabel8)
+                              .addComponent(platNewLocLbl)
                               .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                              .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, 356, javax.swing.GroupLayout.PREFERRED_SIZE))
+                              .addComponent(platNewLocField, javax.swing.GroupLayout.PREFERRED_SIZE, 356, javax.swing.GroupLayout.PREFERRED_SIZE))
                           .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                              .addComponent(jTextField5, javax.swing.GroupLayout.PREFERRED_SIZE, 415, javax.swing.GroupLayout.PREFERRED_SIZE)
+                              .addComponent(regstrField, javax.swing.GroupLayout.PREFERRED_SIZE, 415, javax.swing.GroupLayout.PREFERRED_SIZE)
                               .addGap(29, 29, 29)
-                              .addComponent(jLabel2)
+                              .addComponent(bldNMLbl)
                               .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                              .addComponent(jTextField6)
+                              .addComponent(bldNMField)
                               .addGap(18, 18, 18)
-                              .addComponent(jLabel29)
+                              .addComponent(hoCntLbl)
                               .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                              .addComponent(jTextField7, javax.swing.GroupLayout.PREFERRED_SIZE, 228, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                              .addComponent(hoCntField, javax.swing.GroupLayout.PREFERRED_SIZE, 228, javax.swing.GroupLayout.PREFERRED_SIZE))))
                   .addGroup(layout.createSequentialGroup()
                       .addGap(42, 42, 42)
                       .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                           .addGroup(layout.createSequentialGroup()
                               .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                   .addGroup(layout.createSequentialGroup()
-                                      .addComponent(jLabel9)
+                                      .addComponent(platAreaLbl)
                                       .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                      .addComponent(jTextField4))
+                                      .addComponent(platAreaField))
                                   .addGroup(layout.createSequentialGroup()
                                       .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                          .addComponent(jLabel10, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                          .addComponent(archAreaLbl, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                           .addComponent(jLabel20, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                          .addComponent(jLabel11, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                          .addComponent(bcRatLbl, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                                       .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                           .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                               .addGroup(layout.createSequentialGroup()
@@ -308,27 +360,27 @@ public class DetailForm3 extends JFrame implements ActionListener{
                                                   .addComponent(jTextField15, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE))
                                               .addGroup(layout.createSequentialGroup()
                                                   .addGap(12, 12, 12)
-                                                  .addComponent(jTextField14)))
+                                                  .addComponent(bcRatField)))
                                           .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                                               .addGap(12, 12, 12)
-                                              .addComponent(jTextField8, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                                              .addComponent(archAreaField, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)))))
                               .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 30, Short.MAX_VALUE)
                               .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                   .addGroup(layout.createSequentialGroup()
                                       .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                          .addComponent(jLabel16, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                          .addComponent(jLabel12, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                          .addComponent(vlRatEstmTotAreaLbl, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                          .addComponent(totAreaLbl, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                                       .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                       .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                          .addComponent(jTextField9, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                          .addComponent(jTextField13, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                          .addComponent(totAreaField, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                          .addComponent(vlRatEstmTotAreaField, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)))
                                   .addGroup(layout.createSequentialGroup()
                                       .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                          .addComponent(jLabel22, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                          .addComponent(vlRatLbl, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                           .addComponent(jLabel26, javax.swing.GroupLayout.DEFAULT_SIZE, 90, Short.MAX_VALUE))
                                       .addGap(5, 5, 5)
                                       .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                          .addComponent(jTextField16, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                          .addComponent(vlRatField, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
                                           .addComponent(jTextField17, javax.swing.GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE))))
                               .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 38, Short.MAX_VALUE)
                               .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
@@ -339,17 +391,17 @@ public class DetailForm3 extends JFrame implements ActionListener{
                                   .addGroup(layout.createSequentialGroup()
                                       .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                           .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                              .addComponent(jLabel17, javax.swing.GroupLayout.Alignment.TRAILING)
+                                              .addComponent(strctLbl, javax.swing.GroupLayout.Alignment.TRAILING)
                                               .addComponent(jLabel13))
-                                          .addComponent(jLabel23))
+                                          .addComponent(heitLbl))
                                       .addGap(18, 18, 18)
                                       .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                           .addComponent(jComboBox1, javax.swing.GroupLayout.Alignment.TRAILING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                           .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                              .addComponent(jComboBox8, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                              .addComponent(strctNMComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
                                               .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                              .addComponent(jComboBox7, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                          .addComponent(jTextField19))))
+                                              .addComponent(strctCDComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                          .addComponent(heitField))))
                               .addGap(30, 30, 30)
                               .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                   .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
@@ -359,7 +411,7 @@ public class DetailForm3 extends JFrame implements ActionListener{
                                           .addComponent(jTextField25, javax.swing.GroupLayout.DEFAULT_SIZE, 164, Short.MAX_VALUE))
                                       .addGroup(layout.createSequentialGroup()
                                           .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                              .addComponent(jLabel24)
+                                              .addComponent(roofLbl)
                                               .addComponent(jLabel14))
                                           .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                               .addGroup(layout.createSequentialGroup()
@@ -367,32 +419,32 @@ public class DetailForm3 extends JFrame implements ActionListener{
                                                   .addComponent(jComboBox2, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                                               .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                                                   .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                                  .addComponent(jComboBox9, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                  .addComponent(roofNMComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                   .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                  .addComponent(jComboBox10, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                                                  .addComponent(roofCDComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE)))))
                                   .addGroup(layout.createSequentialGroup()
-                                      .addComponent(jLabel18, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                      .addComponent(mainPurpsLbl, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
                                       .addGap(18, 18, 18)
-                                      .addComponent(jComboBox3, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                      .addComponent(mainPurpsNMComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE)
                                       .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                      .addComponent(jComboBox11, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                      .addComponent(mainPurpsCDComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE)
                                       .addGap(25, 25, 25)
                                       .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                           .addGroup(layout.createSequentialGroup()
-                                              .addComponent(jLabel25)
+                                              .addComponent(atchBldLbl)
                                               .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                              .addComponent(jTextField24))
+                                              .addComponent(atchBldField))
                                           .addGroup(layout.createSequentialGroup()
                                               .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                                  .addComponent(jLabel19)
+                                                  .addComponent(grndFlrCntLbl)
                                                   .addComponent(jLabel15))
                                               .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                               .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                                                   .addComponent(jComboBox4, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                   .addGroup(layout.createSequentialGroup()
-                                                      .addComponent(jTextField10)
+                                                      .addComponent(grndFlrField)
                                                       .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                      .addComponent(jComboBox6, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE))))))))
+                                                      .addComponent(grndFlrNMComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE))))))))
                           .addGroup(layout.createSequentialGroup()
                               .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                   .addComponent(jLabel3)
@@ -401,36 +453,38 @@ public class DetailForm3 extends JFrame implements ActionListener{
               .addContainerGap())
           .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
               .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-              .addComponent(jLabel21)
+              .addComponent(buildInfoLbl)
               .addGap(476, 476, 476))
+          .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+              .addComponent(kGradientPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
       );
       layout.setVerticalGroup(
           layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
           .addGroup(layout.createSequentialGroup()
               .addGap(31, 31, 31)
               .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                  .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
+                  .addComponent(entirLbl, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
                   .addComponent(returnBtn)
-                  .addComponent(jButton2)
+                  .addComponent(reviseBtn)
                   .addComponent(printBtn))
               .addGap(18, 18, 18)
-              .addComponent(jLabel21)
+              .addComponent(buildInfoLbl)
               .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
               .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                  .addComponent(jLabel5)
-                  .addComponent(jTextField5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                  .addComponent(jLabel2)
-                  .addComponent(jLabel29)
-                  .addComponent(jTextField6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                  .addComponent(jTextField7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                  .addComponent(regstrLbl)
+                  .addComponent(regstrField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                  .addComponent(bldNMLbl)
+                  .addComponent(hoCntLbl)
+                  .addComponent(bldNMField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                  .addComponent(hoCntField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
               .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
               .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                  .addComponent(jLabel6)
-                  .addComponent(jLabel7)
-                  .addComponent(jLabel8)
-                  .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                  .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                  .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                  .addComponent(platLocLbl)
+                  .addComponent(jiBunLbl)
+                  .addComponent(platNewLocLbl)
+                  .addComponent(platLocField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                  .addComponent(jiBunField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                  .addComponent(platNewLocField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
               .addGap(30, 30, 30)
               .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                   .addGroup(layout.createSequentialGroup()
@@ -441,16 +495,16 @@ public class DetailForm3 extends JFrame implements ActionListener{
                                   .addComponent(jComboBox4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                               .addGap(18, 18, 18)
                               .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                  .addComponent(jComboBox6, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                  .addComponent(grndFlrNMComboBox, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                   .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                      .addComponent(jLabel19)
-                                      .addComponent(jTextField10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                      .addComponent(grndFlrCntLbl)
+                                      .addComponent(grndFlrField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                               .addGap(18, 18, 18)
                               .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                  .addComponent(jLabel25)
-                                  .addComponent(jTextField24, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                  .addComponent(jComboBox10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                  .addComponent(jComboBox9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                  .addComponent(atchBldLbl)
+                                  .addComponent(atchBldField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                  .addComponent(roofCDComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                  .addComponent(roofNMComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                               .addGap(18, 18, 18)
                               .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                   .addComponent(jLabel28)
@@ -459,32 +513,32 @@ public class DetailForm3 extends JFrame implements ActionListener{
                               .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                   .addGroup(layout.createSequentialGroup()
                                       .addGap(6, 6, 6)
-                                      .addComponent(jLabel12)
+                                      .addComponent(totAreaLbl)
                                       .addGap(18, 18, 18))
                                   .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                                       .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                           .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                               .addComponent(jLabel13)
                                               .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                              .addComponent(jTextField9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                              .addComponent(totAreaField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                                           .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                              .addComponent(jLabel9)
-                                              .addComponent(jTextField4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                              .addComponent(platAreaLbl)
+                                              .addComponent(platAreaField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                                       .addGap(18, 18, 18)))
                               .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                   .addGroup(layout.createSequentialGroup()
                                       .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                                           .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                              .addComponent(jLabel10)
-                                              .addComponent(jTextField8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                              .addComponent(archAreaLbl)
+                                              .addComponent(archAreaField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                                           .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                              .addComponent(jLabel16)
-                                              .addComponent(jTextField13, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                              .addComponent(vlRatEstmTotAreaLbl)
+                                              .addComponent(vlRatEstmTotAreaField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                                       .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                       .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                          .addComponent(jLabel11)
-                                          .addComponent(jTextField14, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                          .addComponent(jLabel22))
+                                          .addComponent(bcRatLbl)
+                                          .addComponent(bcRatField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                          .addComponent(vlRatLbl))
                                       .addGap(18, 18, 18)
                                       .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                                           .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -495,14 +549,14 @@ public class DetailForm3 extends JFrame implements ActionListener{
                                               .addComponent(jTextField17, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
                                   .addGroup(layout.createSequentialGroup()
                                       .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                          .addComponent(jLabel17)
-                                          .addComponent(jComboBox8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                          .addComponent(jComboBox7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                          .addComponent(strctLbl)
+                                          .addComponent(strctNMComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                          .addComponent(strctCDComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                                       .addGap(18, 18, 18)
                                       .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                          .addComponent(jLabel23)
-                                          .addComponent(jTextField19, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                          .addComponent(jTextField16, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                          .addComponent(heitLbl)
+                                          .addComponent(heitField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                          .addComponent(vlRatField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                                       .addGap(18, 18, 18)
                                       .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                           .addComponent(jLabel27)
@@ -515,14 +569,16 @@ public class DetailForm3 extends JFrame implements ActionListener{
                           .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                       .addGap(18, 18, 18)
                       .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                          .addComponent(jLabel18)
-                          .addComponent(jComboBox3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                          .addComponent(jComboBox11, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                          .addComponent(mainPurpsLbl)
+                          .addComponent(mainPurpsNMComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                          .addComponent(mainPurpsCDComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                       .addGap(18, 18, 18)
-                      .addComponent(jLabel24)))
+                      .addComponent(roofLbl)))
               .addGap(13, 13, 13)
               .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
               .addGap(30, 30, 30))
+          .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+              .addComponent(kGradientPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
       );
 
       pack();
@@ -542,6 +598,10 @@ public class DetailForm3 extends JFrame implements ActionListener{
   
   public void setBuildInfo(BuildInfo buildInfo) {
     this.buildInfo = buildInfo;
+  }
+  
+  public void setMember(Member member) {
+    this.member = member;
   }
   
   public static void main(String args[]) {
@@ -566,6 +626,14 @@ public class DetailForm3 extends JFrame implements ActionListener{
       searchPage.setVisible(true);
      }
     
+    if(select == reviseBtn) {
+      try {
+        updateInfo();
+      } catch (SQLException e1) {
+        e1.printStackTrace();
+      }
+    }
+    
     if(select == printBtn) {
         try {
           printWork(build);
@@ -577,11 +645,11 @@ public class DetailForm3 extends JFrame implements ActionListener{
     }
     
  // 주구조 코드 ComboBox의 항목을 선택했을 때.
-    if(select== jComboBox7){  
-      if(!(jComboBox7.getSelectedItem().toString() == "코드")) {
+    if(select== strctCDComboBox){  
+      if(!(strctCDComboBox.getSelectedItem().toString() == "코드")) {
         try {
          // 주구조명칭리셋메서드에 선택한 코드값을 넘겨주고 명칭을 돌려받는다
-         String jugujoNM = jugujoNMReset(jComboBox7.getSelectedItem().toString());
+         String jugujoNM = jugujoNMReset(strctCDComboBox.getSelectedItem().toString());
          
          // 돌려받은 명칭으로 콤보박스를 다시 세팅한다.
          setStrctNM(jugujoNM);
@@ -593,11 +661,11 @@ public class DetailForm3 extends JFrame implements ActionListener{
       }
     }
  // 주구조명칭 ComboBox의 항목을 선택했을 때.
-    if(select== jComboBox8){  
-      if(!(jComboBox8.getSelectedItem().toString() == "주구조명칭")) {
+    if(select== strctNMComboBox){  
+      if(!(strctNMComboBox.getSelectedItem().toString() == "주구조명칭")) {
         try {
           // 주구조코드리셋메서드에 선택한 명칭값을 넘겨주고 코드값을 돌려받는다
-         String jugujoCD =  jugujoCDReset(jComboBox8.getSelectedItem().toString());
+         String jugujoCD =  jugujoCDReset(strctNMComboBox.getSelectedItem().toString());
          // 돌려받은 코드값으로 콤보박스를 다시 세팅한다.
          setStrctCD(jugujoCD);
         } catch (SQLException e1) {
@@ -608,11 +676,11 @@ public class DetailForm3 extends JFrame implements ActionListener{
       }
     }
  // 주용도 코드 ComboBox의 항목을 선택했을 때.
-    if(select== jComboBox11){  
-      if(!(jComboBox11.getSelectedItem().toString() == "코드")) {
+    if(select== mainPurpsCDComboBox){  
+      if(!(mainPurpsCDComboBox.getSelectedItem().toString() == "코드")) {
         try {
          // 주용도명칭 리셋메서드에 선택한 코드값을 넘겨주고 명칭을 돌려받는다
-         String juyongdoNM = juyongdoNMReset(jComboBox11.getSelectedItem().toString());
+         String juyongdoNM = juyongdoNMReset(mainPurpsCDComboBox.getSelectedItem().toString());
          
          // 돌려받은 명칭으로 콤보박스를 다시 세팅한다.
          setMainPurpsNM(juyongdoNM);
@@ -624,11 +692,11 @@ public class DetailForm3 extends JFrame implements ActionListener{
       }
     }
  // 주용도명칭 ComboBox의 항목을 선택했을 때.
-    if(select== jComboBox3){  
-      if(!(jComboBox3.getSelectedItem().toString() == "주용도명칭")) {
+    if(select== mainPurpsNMComboBox){  
+      if(!(mainPurpsNMComboBox.getSelectedItem().toString() == "주용도명칭")) {
         try {
           // 주용도코드 리셋 메서드에 선택한 명칭값을 넘겨주고 코드값을 돌려받는다
-         String juyongdoCD =  juyongdoCDReset(jComboBox3.getSelectedItem().toString());
+         String juyongdoCD =  juyongdoCDReset(mainPurpsNMComboBox.getSelectedItem().toString());
          
          // 돌려받은 코드값으로 콤보박스를 다시 세팅한다.
          setMainPurpsCD(juyongdoCD);
@@ -641,11 +709,11 @@ public class DetailForm3 extends JFrame implements ActionListener{
     }   
     
     // 지붕 코드 ComboBox의 항목을 선택했을 때.
-    if(select== jComboBox10){  
-      if(!(jComboBox10.getSelectedItem().toString() == "코드")) {
+    if(select== roofCDComboBox){  
+      if(!(roofCDComboBox.getSelectedItem().toString() == "코드")) {
         try {
          // 지붕코드 명칭 리셋메서드에 선택한 코드값을 넘겨주고 명칭을 돌려받는다
-         String roofNM = roofNMReset(jComboBox10.getSelectedItem().toString());
+         String roofNM = roofNMReset(roofCDComboBox.getSelectedItem().toString());
          
          // 돌려받은 명칭으로 콤보박스를 다시 세팅한다.
          setRoofNM(roofNM);
@@ -657,11 +725,11 @@ public class DetailForm3 extends JFrame implements ActionListener{
       }
     }
  // 지붕구조명칭 ComboBox의 항목을 선택했을 때.
-    if(select== jComboBox9){  
-      if(!(jComboBox9.getSelectedItem().toString() == "지붕구조명칭")) {
+    if(select== roofNMComboBox){  
+      if(!(roofNMComboBox.getSelectedItem().toString() == "지붕구조명칭")) {
         try {
           // 지붕구조코드 리셋 메서드에 선택한 명칭값을 넘겨주고 코드값을 돌려받는다
-         String roofCD =  roofCDReset(jComboBox9.getSelectedItem().toString());
+         String roofCD =  roofCDReset(roofNMComboBox.getSelectedItem().toString());
          
          // 돌려받은 코드값으로 콤보박스를 다시 세팅한다.
          setRoofCD(roofCD);
@@ -673,14 +741,59 @@ public class DetailForm3 extends JFrame implements ActionListener{
       }
     } 
     // 층수 지상/지하의 항목을 선택했을 때.
-    if(select == jComboBox6) {
-      setChangeFlrReset(jComboBox6.getSelectedItem().toString());
+    if(select == grndFlrNMComboBox) {
+      setChangeFlrReset(grndFlrNMComboBox.getSelectedItem().toString());
     }
     
   }
   
   
-  
+  // 업데이트 해주는 메소드
+  public void updateInfo() throws SQLException {
+    if(member.getUserGrade().equals("10")) {
+      Build reviseBuildInfo = this.build;
+      reviseBuildInfo.setBldNM(bldNMField.getText());  // 건물명(명칭)
+      reviseBuildInfo.setHoCNT(Integer.parseInt(hoCntField.getText())); // 호 수
+      
+      reviseBuildInfo.setPlatArea(new BigDecimal(platAreaField.getText())); // 대지면적
+      reviseBuildInfo.setTotArea(new BigDecimal(totAreaField.getText()));  // 연면적
+      
+      // 지역, 지구, 구역 
+      reviseBuildInfo.setArchArea(new BigDecimal(archAreaField.getText()));                // 건축면적
+      reviseBuildInfo.setVlRatEstmTotArea(new BigDecimal(vlRatEstmTotAreaField.getText()));// 용적률 산정용연면적
+      reviseBuildInfo.setStrctCD(strctCDComboBox.getSelectedItem().toString());  // 주구조코드
+      reviseBuildInfo.setMainPurpsCD(mainPurpsCDComboBox.getSelectedItem().toString()); // 주용도코드
+      
+      // reviseBuildInfo에 해당 건축물의 데이터가 이미 들어가있기 때문에 이렇게 구분지어도 둘 중에 한개만 업데이트 됨.
+      if (grndFlrNMComboBox.getSelectedItem().equals("지상"))  // 콤보박스가 지상이면
+        reviseBuildInfo.setGrndFlrCNT(Integer.parseInt(grndFlrField.getText())); // 지상층수
+      if (grndFlrNMComboBox.getSelectedItem().equals("지하"))  // 콤보박스가 지하이면
+        reviseBuildInfo.setUgrndFlrCNT(Integer.parseInt(grndFlrField.getText())); // 지하층수
+      
+      
+      reviseBuildInfo.setBcRat(new BigDecimal(bcRatField.getText()));            // 건폐율
+      reviseBuildInfo.setVlRat(new BigDecimal(vlRatEstmTotAreaField.getText())); // 용적률
+      reviseBuildInfo.setHeit(Float.parseFloat(heitField.getText()));            // 높이
+      reviseBuildInfo.setRoofCD(roofCDComboBox.getSelectedItem().toString());    // 지붕구조코드
+      reviseBuildInfo.setAtchBldCnt(Integer.parseInt(atchBldField.getText()));  // 부속건축물 수
+      
+      System.out.println("수정할 객체 : "+reviseBuildInfo);
+      
+       // 업데이트 확인창 띄우기
+      String[] buttons = {"확인", "취소하기"};
+      
+      int checkStatus = 0;
+      checkStatus = JOptionPane.showOptionDialog(null, "업데이트 하시겠습니까?", "업데이트", 
+                    JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, buttons, "확인");
+      // 확인을 눌렀을 때 0, 취소를 눌렀을 때 1
+      
+      if(checkStatus == 0) { 
+          dbBuildDetail.updateBuild3(reviseBuildInfo);
+      }
+    } else {
+      JOptionPane.showMessageDialog(reviseBtn, "관리자 등급만 업데이트 할 수 있습니다.");
+    }
+  }
   
   
   // 엑셀에 건축물 정보 저장 후 인쇄하기 (Poi 라이브러리 사용) 
@@ -692,32 +805,32 @@ public class DetailForm3 extends JFrame implements ActionListener{
     Sheet sheet1 = workbook.getSheetAt(0); // 시트가 1개일때 getSheetAt(0);
     Sheet sheet2 = workbook.getSheetAt(1); // 층별 정보가 12개가 넘은 경우. 나머지 층별 정보를 sheet2에 넣고 for문으로 계속 출력.
     
-    sheet1.getRow(4).getCell(2).setCellValue(jTextField5.getText()); // 고유번호
-    sheet1.getRow(4).getCell(13).setCellValue(jTextField6.getText()); // 명칭(건물명)
-    sheet1.getRow(4).getCell(16).setCellValue(jTextField7.getText()); // 호 수
+    sheet1.getRow(4).getCell(2).setCellValue(regstrField.getText()); // 고유번호
+    sheet1.getRow(4).getCell(13).setCellValue(bldNMField.getText()); // 명칭(건물명)
+    sheet1.getRow(4).getCell(16).setCellValue(hoCntField.getText()); // 호 수
     
-    sheet1.getRow(7).getCell(2).setCellValue(jTextField1.getText()); // 대지위치
-    sheet1.getRow(7).getCell(9).setCellValue(jTextField2.getText()); // 지번
-    sheet1.getRow(7).getCell(13).setCellValue(jTextField3.getText()); // 도로명주소
+    sheet1.getRow(7).getCell(2).setCellValue(platLocField.getText()); // 대지위치
+    sheet1.getRow(7).getCell(9).setCellValue(jiBunField.getText()); // 지번
+    sheet1.getRow(7).getCell(13).setCellValue(platNewLocField.getText()); // 도로명주소
     
-    sheet1.getRow(9).getCell(2).setCellValue(jTextField4.getText()); // 대지 면적
-    sheet1.getRow(9).getCell(6).setCellValue(jTextField9.getText()); // 연면적
+    sheet1.getRow(9).getCell(2).setCellValue(platAreaField.getText()); // 대지 면적
+    sheet1.getRow(9).getCell(6).setCellValue(totAreaField.getText()); // 연면적
     sheet1.getRow(9).getCell(9).setCellValue(""); // 지역
     sheet1.getRow(9).getCell(13).setCellValue(""); // 지구
     sheet1.getRow(9).getCell(16).setCellValue(""); // 구역
     
-    sheet1.getRow(11).getCell(2).setCellValue(jTextField8.getText());  // 건축면적
-    sheet1.getRow(11).getCell(6).setCellValue(jTextField13.getText()); // 용적률 산정용 연면적
-    sheet1.getRow(11).getCell(9).setCellValue(jComboBox8.getSelectedItem().toString());   // 주 구조명
-    sheet1.getRow(11).getCell(13).setCellValue(jComboBox3.getSelectedItem().toString());   // 주 용도명
+    sheet1.getRow(11).getCell(2).setCellValue(archAreaField.getText());  // 건축면적
+    sheet1.getRow(11).getCell(6).setCellValue(vlRatEstmTotAreaField.getText()); // 용적률 산정용 연면적
+    sheet1.getRow(11).getCell(9).setCellValue(strctNMComboBox.getSelectedItem().toString());   // 주 구조명
+    sheet1.getRow(11).getCell(13).setCellValue(mainPurpsNMComboBox.getSelectedItem().toString());   // 주 용도명
     sheet1.getRow(11).getCell(17).setCellValue(build.getGrndFlrCNT()); // 지상층
     sheet1.getRow(11).getCell(19).setCellValue(build.getUgrndFlrCNT()); // 지하층
     
-    sheet1.getRow(13).getCell(2).setCellValue(jTextField14.getText()); // 건폐율
-    sheet1.getRow(13).getCell(6).setCellValue(jTextField16.getText()); // 용적률
-    sheet1.getRow(13).getCell(9).setCellValue(jTextField19.getText()); // 높이
-    sheet1.getRow(13).getCell(13).setCellValue(jComboBox9.getSelectedItem().toString()); // 지붕구조
-    sheet1.getRow(12).getCell(18).setCellValue(jTextField24.getText()); // 부속건축물 수
+    sheet1.getRow(13).getCell(2).setCellValue(bcRatField.getText()); // 건폐율
+    sheet1.getRow(13).getCell(6).setCellValue(vlRatField.getText()); // 용적률
+    sheet1.getRow(13).getCell(9).setCellValue(heitField.getText()); // 높이
+    sheet1.getRow(13).getCell(13).setCellValue(roofNMComboBox.getSelectedItem().toString()); // 지붕구조
+    sheet1.getRow(12).getCell(18).setCellValue(atchBldField.getText()); // 부속건축물 수
     
     sheet1.getRow(16).getCell(2).setCellValue("");    // 공간 면적 합계
     sheet1.getRow(16).getCell(6).setCellValue("");    // 공개 공지 면적
@@ -731,22 +844,22 @@ public class DetailForm3 extends JFrame implements ActionListener{
     int checkSum = 0;       
     for (int i = 20; i < 20+floorList.size(); i++) {
       // 시트 위치는 20 행부터  층별 모델테이블은 0행부터 가져와서 붙여줘야 함.
-      sheet1.getRow(i).getCell(2).setCellValue((String) model1.getValueAt(i % 20, 0)); //구분
-      sheet1.getRow(i).getCell(3).setCellValue((String) model1.getValueAt(i % 20, 1)); //층별
-      sheet1.getRow(i).getCell(4).setCellValue((String) model1.getValueAt(i % 20, 2)); //구조
-      sheet1.getRow(i).getCell(7).setCellValue((String) model1.getValueAt(i % 20, 3)); //용도
+      sheet1.getRow(i).getCell(2).setCellValue((String) floorModel.getValueAt(i % 20, 0)); //구분
+      sheet1.getRow(i).getCell(3).setCellValue((String) floorModel.getValueAt(i % 20, 1)); //층별
+      sheet1.getRow(i).getCell(4).setCellValue((String) floorModel.getValueAt(i % 20, 2)); //구조
+      sheet1.getRow(i).getCell(7).setCellValue((String) floorModel.getValueAt(i % 20, 3)); //용도
       
-      String platArea = new BigDecimal(model1.getValueAt(i % 20, 4).toString())
+      String platArea = new BigDecimal(floorModel.getValueAt(i % 20, 4).toString())
                             .setScale(2, BigDecimal.ROUND_HALF_UP).toString();
       sheet1.getRow(i).getCell(9).setCellValue(platArea);                              //면적
       
       // 같은 행의 오른쪽 건축물현황 부분에 데이터 지정 6번째 부터 시작
-      sheet1.getRow(i).getCell(11).setCellValue((String) model1.getValueAt(i % 20 + 6, 0));
-      sheet1.getRow(i).getCell(12).setCellValue((String) model1.getValueAt(i % 20 + 6, 1));
-      sheet1.getRow(i).getCell(13).setCellValue((String) model1.getValueAt(i % 20 + 6, 2));
-      sheet1.getRow(i).getCell(16).setCellValue((String) model1.getValueAt(i % 20 + 6, 3));
+      sheet1.getRow(i).getCell(11).setCellValue((String) floorModel.getValueAt(i % 20 + 6, 0));
+      sheet1.getRow(i).getCell(12).setCellValue((String) floorModel.getValueAt(i % 20 + 6, 1));
+      sheet1.getRow(i).getCell(13).setCellValue((String) floorModel.getValueAt(i % 20 + 6, 2));
+      sheet1.getRow(i).getCell(16).setCellValue((String) floorModel.getValueAt(i % 20 + 6, 3));
       
-      String platArea2 = new BigDecimal(model1.getValueAt(i % 20 + 6, 4).toString())
+      String platArea2 = new BigDecimal(floorModel.getValueAt(i % 20 + 6, 4).toString())
                              .setScale(2, BigDecimal.ROUND_HALF_UP).toString();
       sheet1.getRow(i).getCell(18).setCellValue(platArea2);
       
@@ -766,7 +879,7 @@ public class DetailForm3 extends JFrame implements ActionListener{
       workbook.removeSheetAt(1);
       
       // 파일출력
-      File xlsFile = new File("C:/Users/seoin_01/Desktop/project/src/com/resource/집합건축물대장_표제부.xlsx");
+      File xlsFile = new File("C:/Users/seoin_01/Desktop/project/src/com/resource/"+build.getBuildingPK()+"집합건축물대장_표제부.xlsx");
       FileOutputStream fileOut = new FileOutputStream(xlsFile);
       workbook.write(fileOut);
       
@@ -801,30 +914,30 @@ public class DetailForm3 extends JFrame implements ActionListener{
       // sheet2가 여러장이 될수 있으므로 for문 선언.
       for (int i = 0; i < flrPrintSize; i++) {
           workbook.cloneSheet(i+1);  // 1 시트가 복사되었다.(두번째 시트) (시트도 0번부터)
-          sheet2.getRow(4).getCell(2).setCellValue(jTextField5.getText());  // 고유번호
-          sheet2.getRow(4).getCell(13).setCellValue(jTextField6.getText());  // 명칭
-          sheet2.getRow(4).getCell(16).setCellValue(jTextField7.getText()); // 특이사항
+          sheet2.getRow(4).getCell(2).setCellValue(regstrField.getText());  // 고유번호
+          sheet2.getRow(4).getCell(13).setCellValue(bldNMField.getText());  // 명칭
+          sheet2.getRow(4).getCell(16).setCellValue(hoCntField.getText()); // 특이사항
           
-          sheet2.getRow(7).getCell(2).setCellValue(jTextField1.getText());  // 대지위치
-          sheet2.getRow(7).getCell(9).setCellValue(jTextField2.getText());  // 지번
-          sheet2.getRow(7).getCell(13).setCellValue(jTextField3.getText()); // 도로명주소
+          sheet2.getRow(7).getCell(2).setCellValue(platLocField.getText());  // 대지위치
+          sheet2.getRow(7).getCell(9).setCellValue(jiBunField.getText());  // 지번
+          sheet2.getRow(7).getCell(13).setCellValue(platNewLocField.getText()); // 도로명주소
           
           // 층별 현황 출력  
             for (int j = 11; j < 11 + floorList.size()-flrStartInt; j++) {
-                sheet2.getRow(j).getCell(2).setCellValue((String) model1.getValueAt(flrCheckSum + flrStartInt + plus, 0)); //구분
-                sheet2.getRow(j).getCell(3).setCellValue((String) model1.getValueAt(flrCheckSum + flrStartInt + plus, 1)); //층별
-                sheet2.getRow(j).getCell(4).setCellValue((String) model1.getValueAt(flrCheckSum + flrStartInt + plus, 2)); //구조
-                sheet2.getRow(j).getCell(7).setCellValue((String) model1.getValueAt(flrCheckSum + flrStartInt + plus, 3)); //용도
-                String platArea = new BigDecimal(model1.getValueAt(flrCheckSum + flrStartInt + plus, 4).toString())
+                sheet2.getRow(j).getCell(2).setCellValue((String) floorModel.getValueAt(flrCheckSum + flrStartInt + plus, 0)); //구분
+                sheet2.getRow(j).getCell(3).setCellValue((String) floorModel.getValueAt(flrCheckSum + flrStartInt + plus, 1)); //층별
+                sheet2.getRow(j).getCell(4).setCellValue((String) floorModel.getValueAt(flrCheckSum + flrStartInt + plus, 2)); //구조
+                sheet2.getRow(j).getCell(7).setCellValue((String) floorModel.getValueAt(flrCheckSum + flrStartInt + plus, 3)); //용도
+                String platArea = new BigDecimal(floorModel.getValueAt(flrCheckSum + flrStartInt + plus, 4).toString())
                     .setScale(2, BigDecimal.ROUND_HALF_UP).toString();
                 sheet2.getRow(j).getCell(9).setCellValue(platArea);                                                 //면적
               
               if(floorList.size() > flrCheckSum + flrStartInt + flrCheckSum2) { // 배열보다 커져버리면 오류발생된다.
-                  sheet2.getRow(j).getCell(11).setCellValue((String) model1.getValueAt(flrCheckSum + flrStartInt + flrCheckSum2, 0)); // 구분
-                  sheet2.getRow(j).getCell(12).setCellValue((String) model1.getValueAt(flrCheckSum + flrStartInt + flrCheckSum2, 1)); // 층별
-                  sheet2.getRow(j).getCell(13).setCellValue((String) model1.getValueAt(flrCheckSum + flrStartInt + flrCheckSum2, 2)); // 구조
-                  sheet2.getRow(j).getCell(16).setCellValue((String) model1.getValueAt(flrCheckSum + flrStartInt + flrCheckSum2, 3)); // 용도
-                  String platArea2 = new BigDecimal(model1.getValueAt(flrCheckSum + flrStartInt + flrCheckSum2, 4).toString())
+                  sheet2.getRow(j).getCell(11).setCellValue((String) floorModel.getValueAt(flrCheckSum + flrStartInt + flrCheckSum2, 0)); // 구분
+                  sheet2.getRow(j).getCell(12).setCellValue((String) floorModel.getValueAt(flrCheckSum + flrStartInt + flrCheckSum2, 1)); // 층별
+                  sheet2.getRow(j).getCell(13).setCellValue((String) floorModel.getValueAt(flrCheckSum + flrStartInt + flrCheckSum2, 2)); // 구조
+                  sheet2.getRow(j).getCell(16).setCellValue((String) floorModel.getValueAt(flrCheckSum + flrStartInt + flrCheckSum2, 3)); // 용도
+                  String platArea2 = new BigDecimal(floorModel.getValueAt(flrCheckSum + flrStartInt + flrCheckSum2, 4).toString())
                       .setScale(2, BigDecimal.ROUND_HALF_UP).toString();
                   sheet2.getRow(j).getCell(18).setCellValue(platArea2);                                               // 면적
                 }
@@ -850,7 +963,7 @@ public class DetailForm3 extends JFrame implements ActionListener{
       workbook.removeSheetAt(flrPrintSize + 1); // 마지막 비어있는 시트 제거
       
       try {
-        File xlsFile = new File("C:/Users/seoin_01/Desktop/project/src/com/resource/집합건축물대장_표제부.xlsx");
+        File xlsFile = new File("C:/Users/seoin_01/Desktop/project/src/com/resource/"+build.getBuildingPK()+"집합건축물대장_표제부.xlsx");
         FileOutputStream fileOut = new FileOutputStream(xlsFile);
         workbook.write(fileOut);
         System.out.println("저장완료");
@@ -868,15 +981,15 @@ public class DetailForm3 extends JFrame implements ActionListener{
         desktop = Desktop.getDesktop();
       }
       
-      desktop.print(new File("C:/Users/seoin_01/Desktop/project/src/com/resource/집합건축물대장_표제부.xlsx"));
+      desktop.print(new File("C:/Users/seoin_01/Desktop/project/src/com/resource/"+build.getBuildingPK()+"집합건축물대장_표제부.xlsx"));
     
   }
   
   
   // 상세정보 폼이 실행되면 SearchPage에서 BuildInfo 객체를 받아 Building(건축물대장)의 정보를 조회해서 뿌려준다.
   public void inputBuildInfo(BuildInfo buildInfo) throws SQLException {
-    jLabel1.setText(buildInfo.getSidoNM() + " " + buildInfo.getSigunguNM() + " " + buildInfo.getBjdongNM() + " " +
-                    buildInfo.getBunNum() + "-" + buildInfo.getJiNum() + buildInfo.getBldNM());
+    entirLbl.setText(buildInfo.getSidoNM() + " " + buildInfo.getSigunguNM() + " " + buildInfo.getBjdongNM() + " " +
+                    buildInfo.getBunNum() + "-" + buildInfo.getJiNum() + " " + buildInfo.getBldNM());
 
     
     // 리스트에서 선택한 건물 정보로 건축물 대장을 찾음.(대장 구분코드, 대장종류, 대장 PK, bun, ji 정보로 조회)
@@ -886,24 +999,24 @@ public class DetailForm3 extends JFrame implements ActionListener{
         buildInfo.getBunNum(),buildInfo.getJiNum());
     
     
-    jTextField5.setText(build.getRegstrNo());
-    jTextField6.setText(build.getBldNM());
-    jTextField7.setText(build.getDongNM()); // 동 명이 호 수
-    jTextField1.setText(build.getPlatLoC());
-    jTextField2.setText(build.getJiBun());
+    regstrField.setText(build.getRegstrNo());
+    bldNMField.setText(build.getBldNM());
+    hoCntField.setText(Integer.toString(build.getHoCNT()));
+    platLocField.setText(build.getPlatLoC());
+    jiBunField.setText(build.getJiBun());
     
     
     // 도로명주소 
-    jTextField3.setText(build.getPlatNewLoc());
+    platNewLocField.setText(build.getPlatNewLoc());
     
     // 대지면적
     try {
       BigDecimal bdc = new BigDecimal(build.getPlatArea().toString());
       String stringPlatArea = bdc.setScale(4, BigDecimal.ROUND_HALF_UP).toString();
-      jTextField4.setText(stringPlatArea);
+      platAreaField.setText(stringPlatArea);
     } catch (NullPointerException e) {
       System.out.println("대지면적 데이터가 없습니다." + e);
-      jTextField4.setText("");
+      platAreaField.setText("");
     } catch (Exception e1) {
       System.out.println("에러!");
     }
@@ -912,10 +1025,10 @@ public class DetailForm3 extends JFrame implements ActionListener{
     try {
       BigDecimal bdc2 = new BigDecimal(build.getTotArea().toString());
       String stringTotArea = bdc2.setScale(4, BigDecimal.ROUND_HALF_UP).toString();
-      jTextField9.setText(stringTotArea);
+      totAreaField.setText(stringTotArea);
     } catch (NullPointerException e) {
       System.out.println("연면적 데이터가 없습니다" + e);
-      jTextField9.setText("");
+      totAreaField.setText("");
     } catch (Exception e1) {
       System.out.println("에러!");
     }
@@ -924,10 +1037,10 @@ public class DetailForm3 extends JFrame implements ActionListener{
     try {
       BigDecimal bdc3 = new BigDecimal(build.getArchArea().toString());
       String stringArchArea = bdc3.setScale(4, BigDecimal.ROUND_HALF_UP).toString();
-      jTextField8.setText(stringArchArea);
+      archAreaField.setText(stringArchArea);
     } catch (NullPointerException e) {
       System.out.println("건축면적 데이터가 없습니다." + e);
-      jTextField8.setText("");
+      archAreaField.setText("");
     } catch (Exception e1) {
       System.out.println("에러!");
     }
@@ -936,10 +1049,10 @@ public class DetailForm3 extends JFrame implements ActionListener{
     try {
       BigDecimal bdc4 = new BigDecimal(build.getVlRatEstmTotArea().toString());
       String stringVlRatEstmTotArea = bdc4.setScale(4, BigDecimal.ROUND_HALF_UP).toString();
-      jTextField13.setText(stringVlRatEstmTotArea);
+      vlRatEstmTotAreaField.setText(stringVlRatEstmTotArea);
     } catch (NullPointerException e) {
       System.out.println("용적률산정용연면적 데이터가 없습니다." + e);
-      jTextField13.setText("");
+      vlRatEstmTotAreaField.setText("");
     } catch (Exception e1) {
       System.out.println("에러!");
     }
@@ -960,7 +1073,7 @@ public class DetailForm3 extends JFrame implements ActionListener{
     
     // 층수
     try {
-    jTextField10.setText(Integer.toString(build.getGrndFlrCNT()));
+    grndFlrField.setText(Integer.toString(build.getGrndFlrCNT()));
       grndFlr = build.getGrndFlrCNT();
       urndFlr = build.getUgrndFlrCNT();
     } catch (NullPointerException e) {
@@ -972,10 +1085,10 @@ public class DetailForm3 extends JFrame implements ActionListener{
     try {
       BigDecimal bdc5 = new BigDecimal(build.getBcRat().toString());
       String stringBcRat = bdc5.setScale(4, BigDecimal.ROUND_HALF_UP).toString();
-      jTextField14.setText(stringBcRat);
+      bcRatField.setText(stringBcRat);
     } catch (NullPointerException e) {
       System.out.println("건폐율 데이터가 없습니다." + e);
-      jTextField14.setText("");
+      bcRatField.setText("");
     } catch (Exception e1) {
       System.out.println("에러!");
     }
@@ -984,10 +1097,10 @@ public class DetailForm3 extends JFrame implements ActionListener{
     try {
       BigDecimal bdc6 = new BigDecimal(build.getVlRat().toString());
       String stringVlRat = bdc6.setScale(4, BigDecimal.ROUND_HALF_UP).toString();
-      jTextField16.setText(stringVlRat);
+      vlRatField.setText(stringVlRat);
     } catch (NullPointerException e) {
       System.out.println("용적률 데이터가 없습니다." + e);
-      jTextField16.setText("");
+      vlRatField.setText("");
     } catch (Exception e1) {
       System.out.println("에러!");
     }
@@ -995,10 +1108,10 @@ public class DetailForm3 extends JFrame implements ActionListener{
     // 높이
     try {
       String stringHeit = Float.toString(build.getHeit());
-      jTextField19.setText(stringHeit);
+      heitField.setText(stringHeit);
     } catch (NullPointerException e) {
       System.out.println("높이 데이터가 없습니다." + e);
-      jTextField19.setText("");
+      heitField.setText("");
     } catch (Exception e1) {
       System.out.println("에러!");
     }
@@ -1012,7 +1125,7 @@ public class DetailForm3 extends JFrame implements ActionListener{
     // 부속건축물 수
     try {
       String stringAtchBldCnt = Integer.toString(build.getAtchBldCnt());
-      jTextField24.setText(stringAtchBldCnt);
+      atchBldField.setText(stringAtchBldCnt);
     } catch (NullPointerException e) {
       System.out.println("부속건축물 수 데이터가 없습니다."+ e);
     } catch (Exception e1) {
@@ -1072,9 +1185,9 @@ public class DetailForm3 extends JFrame implements ActionListener{
   // 지상/지하 선택시 층수 바꾸기.
   private void setChangeFlrReset(String groundNM) {
     if(groundNM == "지상") {
-      jTextField10.setText(Integer.toString(grndFlr));
+      grndFlrField.setText(Integer.toString(grndFlr));
     } else {
-      jTextField10.setText(Integer.toString(urndFlr));
+      grndFlrField.setText(Integer.toString(urndFlr));
     }
   }
   
@@ -1109,7 +1222,7 @@ public class DetailForm3 extends JFrame implements ActionListener{
         floorListArray[2] = floorList.get(i).getStrctNM();
         floorListArray[3] = floorList.get(i).getMainPurpsNM();
         floorListArray[4] = floorList.get(i).getArea();
-        model1.addRow(floorListArray);
+        floorModel.addRow(floorListArray);
     }
   
   }
@@ -1128,11 +1241,9 @@ public class DetailForm3 extends JFrame implements ActionListener{
   
   @SuppressWarnings({"unchecked", "rawtypes"})
   public void setStrctNM(String name) {
-      jComboBox8.setModel(new DefaultComboBoxModel(new String[] { "주용도목적", "조적구조", "벽돌구조", "블록구조", "석구조", "기타조적구조", "콘크리트구조",
-          "철근콘크리트구조", "프리케스트콘크리트구조", "기타콘크리트구조", "철골구조", "일반철골구조", "경량철골구조", "강파이프구조", "기타강구조", "철골콘크리트구조",
-          "철골철근콘크리트구조", "기타철골철근콘크리트구조", "목구조", "일반목구조", "통나무구조", "기타구조" }));
+      strctNMComboBox.setModel(new DefaultComboBoxModel(new StrctArray().strctNM));
       try {
-        jComboBox8.setSelectedItem(name.toString());
+        strctNMComboBox.setSelectedItem(name.toString());
       } catch (Exception e) {
       
       }
@@ -1140,69 +1251,18 @@ public class DetailForm3 extends JFrame implements ActionListener{
   
   @SuppressWarnings({"rawtypes", "unchecked"})
   public void setStrctCD(String name) {
-      jComboBox7.setModel(new DefaultComboBoxModel(new String[] {"코드", "10", "11", "12", "13", "19", "20", "21", "22", "29", "30", "31",
-          "32", "33", "39", "40", "41", "42", "49", "50", "51", "52", "99"}));
+      strctCDComboBox.setModel(new DefaultComboBoxModel(new StrctArray().strctCD));
       try {
-        jComboBox7.setSelectedItem(name.toString());
+        strctCDComboBox.setSelectedItem(name.toString());
       } catch (Exception e) {
       }
   }
   
   @SuppressWarnings({"unchecked", "rawtypes"})
   public void setMainPurpsNM(String name) {
-      jComboBox3.setModel(new DefaultComboBoxModel(new String[] { "주용도명칭","단독주택", "다중주택", "다가구주택", "공관", "공동주택", "아파트", "연립주택", "다세대주택", 
-          "생활편익시설", "부대시설", "복리시설", "기숙사", "제1종근린생활시설", "소매점", "휴게음식점", "이(미)용원", "일반목욕장", "의원", "체육장", "마을공동시설", "변전소", "양수장", 
-          "정수장", "대피소", "공중화장실", "세탁소", "치과의원", "한의원", "침술원", "접골원", "조산소", "탁구장", "체육도장", "마을회관", "마을공동작업소", "마을공동구판장", "지역아동센터",
-          "목욕장", "이용원", "미용원", "조산원", "제과점", "슈퍼마켓", "안마원", "공공시설", "동사무소", "경찰서", "파출소", "소방서", "우체국", "전신전화국", "방송국", "보건소", "공공도서관",
-          "지역의료보험조합", "제과점", "지역자치센터", "지구대", "지역건강보험조합", "기타공공시설", "기타제1종근생활시설", "제2종근린생활시설",
-          "일반음식점", "휴게음식점", "기원", "서점(1종근.생미해당)", "제조업소", "수리점", "게임제공업소", "사진관", "표구점", "학원", "장의사", "동물병원", "어린이집", "독서실", "총포판매소",
-          "단란주점", "의약품도매점", "자동차영업소", "안마시술소", "노래연습장", "세탁소", "멀티미디어문화컨텐츠설비제공업소", "복합유통.제공업소", "직업훈련소", "인터넷컴퓨터게임시설제공업소", 
-          "청소년게임제공업소", "복합유통게임제공업소", "제과점", "고시원", "의약품판매소", "의료기기판매소", "총포판매사", "소개업", "안마원", "고시원", "제과점", "인터넷컴퓨터게임시설제공업의시설",
-          "청소년게임제공업의시설", "복합유통게임제공업의시설", "운동시설", "테니스장", "체력단련장", "에어로빅장", "볼링장", "당구장", "실내낚시터", "골프연습장", "물놀이형시설", "기타운동시설",
-          "종교집회장", "교회", "성당", "사찰", "기도원", "수도원", "수녀원", "제실", "사당", "기타종교집회장", "공연장", "극장(영화관)", "음악당", "연예장",
-          "비디오물감상실", "비디오물소극장", "극장", "영화관", "서커스장", "기타공연장", "사무소", "금융업소", "사무소", "부동산중개업소", "결혼상담소", "출판사", "부동산중개사무소", "기타사무소",
-          "기타제2종근생활시설", "문화및집회시설", "공연장", "극장(영화관)", "음악당", "연예장", "서어커스장", "비디오물감상실", "비디오물소극장", "극장", "영화관", "기타공연장", "집회장", "예식장",
-          "회의장", "공회당", "마권장외발매소", "마권전화투표소", "기타집회장", "관람장", "경마장", "자동차경기장", "체육관", "운동장", "경륜장", "경정장", "기타관람장", "전시장", "박물관",
-          "미술관", "과학관", "기념관", "산업전시장", "박람회장", "문화관", "체험관", "기타전시장", "동.식물원", "동물원", "식물원", "수족관", "기타동.식물원", "기타문화및집회시설", "종교시설",
-          "종교집회장", "교회", "성당", "사찰", "기도원", "수도원", "수녀원", "제실", "사당", "납골당(제2종근생 제외)", "봉안당", "기타종교집회장", 
-          "기타종교시설", "판매시설", "도매시장", "소매시장", "시장", "백화점", "대형백화점", "대형점", "쇼핑센터", "기타소매시장", "상점", "게임제공업소", "멀티미디어문화컨텐츠설비제공업소",
-          "복합유통.제공업소", "인터넷컴퓨터게임시설제공업소", "청소년게임제공업소", "복합유통게임제공업소", "일반게임제공의시설", "청소년게임제공업의시설", "복합유통게임제공업의시설", "인터넷컴퓨터게임시설제공업의시설",
-          "일반게임제공업의시설", "도매시장", "농수산물도매시장", "농수산물공판장", "기타도매시장", "기타판매시설", "운수시설", "여객자동차터미널", "화물터미널", "철도역사", "공항시설", "항만시설(터미널)",
-          "종합여객시설", "철도시설", "항만시설", "기타운수시설", "의료시설", "병원", "종합병원", "산부인과병원", "치과병원", "한방병원", "정신병원", "격리병원", "병원", "요양소", "요양병원",
-          "기타병원", "격리병원", "전염병원", "마약진료소", "기타격리병원", "장례식장", "기타의료시설", "교육연구시설", "교육(연수)원", "직업훈련소", "학원",
-          "연구소", "도서관", "학교", "초등학교", "중학교", "고등학교", "대학교", "전문대학", "대학", "유치원", "기타학교", "교육원", "교육원", "연수원", "기타교육원", "연구소", "연구소",
-          "시험소", "계측계량소", "기타연구소", "기타교육연구시설", "노유자시설", "아동관련시설", "유치원", "영유아보육시설", "어린이집", "아동복지시설", "기타아동관련시설", "노인복지시설", "사회복지시설",
-          "근로복지시설", "기타노유자시설", "수련시설", "유스호스텔", "생활권수련시설","청소년수련원(관)", "유스호스텔", "청소년문화의집", "청소년특화시설", "청소년수련관", "기타생활권수련시설",
-          "자연권수련시설", "청소년수련원(관)", "청소년야영장", "청소년수련원", "기타자연권수련시설", "기타수련시설", "운동시설", "체육관", "운동장시설", "탁구장", "체육도장", "테니스장", "체력단련장",
-          "에어로빅장", "볼링장", "당구장", "실내낚시터", "골프연습장", "물놀이형시설", "운동장", "육상장", "구기장", "볼링장", "수영장", "스케이트장", "롤러스케이트장", "승마장", "사격장", "궁도장",
-          "골프장", "기타 운동시설", "업무시설", "공공업무시설", "국가기관청사", "자치단체청사", "외국공관", "기타공공업무시설", "일반업무시설", "금융업소", "오피스텔", "신문사", "사무소", "기타일반업무시설",
-          "숙박시설", "고시원", "일반숙박시설", "호텔", "여관", "여인숙", "기타일반숙박시설", "관광숙박시설", "관광호텔", "수상관광호텔", "한국전통호텔", "가족호텔", "휴양콘도미니엄", "기타관광숙박시설",
-          "고시원", "기타숙박시설", "위락시설", "단란주점", "유흥주점", "특수목욕장", "유기장", "투전기업소", "무도장(학원)", "주점영업", "카지노업소", "유원시설업의시설", "무도장", "무도학원",
-          "카지노영업소", "사행행위업소", "기타위락시설", "공장", "일반공장", "유해공장", "물품공장", "물품 제조공장", "물품 가공공장", "물품 염색공장", "물품 도장공장", "물품 표백공장", "물품 재봉공장", 
-          "물품 건조공장", "물품 인쇄공장", "물품 수리공장", "기타공장", "창고시설", "창고", "하역장", "물류터미널", "집배송시설", "창고", "일반창고", "냉장창고", "냉동창고", "기타창고시설", "위험물저장및처리시설",
-          "주유소", "액화석유가스충전소", "위험물제조소", "위험물저장소", "액화가스취급소", "액화가스판매소", "유독물보관저장시설", "고압가스충전저장소", "석유판매소", "위험물취급소", "액화석유가스판매소",
-          "액화석유가스저장소", "유독물보관소", "유독물저장소", "유독물판매시설", "고압가스충전소", "고압가스판매소", "고압가스저장소", "도료류판매소", "도시가스공급시설", "화약류저장소",
-          "기타위험물저장처리시설", "자동차관련시설", "주차장", "세차장", "폐차장", "검사장", "매매장", "정비공장", "운전학원", "정비학원", "차고", "주기장",
-          "기타자동차관련시설", "동.식물관련시설", "도축장", "도계장", "버섯재배사", "종묘배양시설", "온실", "작물재배사", "축사", "축사", "양잠", "양봉", "양어시설", "부화장",
-          "가축시설", "가축용운동시설", "인공수정센터", "관리사", "가축용창고", "가축시장", "동물검역소", "실험동물사육시설", "기타가축시설", "기타동식물관련시설", "분뇨.쓰레기처리시설",
-          "분뇨처리시설", "폐기물처리시설", "폐기물재활용시설", "고물상", "폐기물처리시설및폐기물감량화시설", "기타분뇨쓰레기처리시설",
-          "교정및군사시설", "감화원", "군사시설", "국방ㆍ군사시설", "보호관찰소", "갱생보호소", "소년원", "소년분류심사원", "교도소", "구치소", "소년원", "소년분류심사원", "교정시설",
-          "보호감호소", "구치소", "교도소", "기타교정및군사시설", "방송통신시설", "방송국", "전신전화국", "촬영소", "통신용시설", "방송국", "방송국", "방송프로그램제작시설", "송신시설",
-          "수신시설", "중계시설", "기타방송통신시설", "발전시설", "발전소", "기타발전시설", "묘지관련시설", "화장장", "납골당",
-          "묘지에 부수되는 건축물", "봉안당", "화장시설", "자연장지에 부수되는 건축물", "기타묘지관련시설", "관광휴게시설", "야외음악당", "야외극장", "어린이회관", "관망탑", "휴게소",
-          "관광지시설", "공원에 부수되는 시설", "유원지에 부수되는 시설", "관광지에 부수되는 시설", "기타관광휴게시설", "가설건축물", "재해복구용가설건축물", "가설흥행장", "가설전람회장", 
-          "공사용가설건축물", "견본주택", "가설점포", "경비용가설건축물", "임시자동차차고", "임시사무실", "임시창고", "임시숙소", "농,어업용비닐하우스",
-          "가축용가설건축물", "농,어업용고정식온실", "창고용천막", "관광문화행사용가설건축물", "기타가설건축물", "장례식장", "장례식장", "근린생활시설", "소매점", "휴게음식점", "이(미)용원",
-          "일반목욕장", "의원", "체육장", "마을공동시설", "변전소", "양수장", "정수장", "대피소", "공중화장실", "치과의원", "한의원", "침술원", "접골원", "조산소", "탁구장", "체육도장",
-          "마을공회당", "마을공동작업소", "마을공동구판장", "공공시설", "동사무소", "경찰서", "파출소", "소방서", "우체국", "전신전화국", "방송국", "보건소", "공공도서관", "기타공공시설", "일반음식점",
-          "휴게음식점", "기원", "서점", "제조업소", "수리점", "게임제공업소", "사진관", "표구점", "학원", "장의사",
-          "동물병원", "독서실", "총포판매소", "단란주점", "의약품도매점", "자동차영업소", "안마시술소", "노래연습장", "세탁소", "운동시설", "테니스장", "체력단련장", "에어로빅장", "볼링장", 
-          "당구장", "실내낚시터", "골프연습장", "기타운동시설", "종교집회장", "교회", "성당", "사찰", "기타종교집회장", "공연장", "극장(영화관)", "음악당", "연예장", "기타공연장", "사무소", "금융업소",
-          "사무소", "부동산중개업소", "결혼상담소", "기타사무소", "기타근린생활시설", "문화및집회시설", "판매및영업시설", "대규모소매점", "기타판매및영업시설", "축사", "가축시설", "교육연구및복지시설",
-          "기타교육연구및복지시설", "공공용시설", "교도소", "기타공공용시설"  
-      }));
+      mainPurpsNMComboBox.setModel(new DefaultComboBoxModel(new MainPurpsArray().mainPurpsNM));
      try {
-       jComboBox3.setSelectedItem(name.toString());
+       mainPurpsNMComboBox.setSelectedItem(name.toString());
     } catch (Exception e) {
     }
     
@@ -1210,80 +1270,27 @@ public class DetailForm3 extends JFrame implements ActionListener{
   
   @SuppressWarnings({"unchecked", "rawtypes"})
   public void setMainPurpsCD(String name) {
-      jComboBox11.setModel(new DefaultComboBoxModel(new String[] {"코드", "01000", "01001", "01002", "01003", "01004", 
-          "02000", "02001", "02002", "02003", "02004", "02005", "02006", "02007", "03000", "03001", "03002", "03003", 
-          "03004", "03005", "03006", "03007", "03008", "03009", "03010", "03011", "03012", "03013", "03014", "03015",
-          "03016", "03017", "03018", "03019", "03020", "03021", "03022", "03023", "03024", "03025", "03026", "03027",
-          "03028", "03029", "03030", "03031", "03100", "03101", "03102", "03103", "03104", "03105", "03106", "03107",
-          "03108", "03109", "03110", "03111", "03112", "03113", "03114", "03199", "03999", "04000", "04001", "04002",
-          "04003", "04004", "04005", "04006", "04007", "04008", "04009", "04010", "04011", "04012", "04013", "04014",
-          "04015", "04016", "04017", "04018", "04019", "04020", "04021", "04022", "04023", "04024", "04025", "04026",
-          "04027", "04028", "04029", "04030", "04031", "04032", "04033", "04034", "04035", "04036", "04037", "04038",
-          "04039", "04100", "04101", "04102", "04103", "04104", "04105", "04106", "04107", "04108", "04199", "04200",
-          "04201", "04202", "04203", "04204", "04205", "04206", "04207", "04208", "04299", "04300", "04301", "04302", 
-          "04303", "04304", "04305", "04306", "04307", "04308", "04399", "04400", "04401", "04402", "04403", "04404",
-          "04405", "04406", "04499", "04999", "05000", "05100", "05101", "05102", "05103", "05104", "05105", "05106",
-          "05107", "05108", "05199", "05200", "05201", "05202", "05203", "05204", "05205", "05299", "05300", "05301",
-          "05302", "05303", "05304", "05305", "05306", "05399", "05400", "05401", "05402", "05403", "05404", "05405",
-          "05406", "05407", "05408", "05499", "05500", "05501", "05502", "05503", "05599", "05999", "06000", "06100",
-          "06101", "06102", "06103", "06104", "06105", "06106", "06107", "06108", "06109", "06110", "06199", "06999",
-          "07000", "07001", "07100", "07101", "07102", "07103", "07104", "07105", "07199", "07201", "07202", "07203",
-          "07204", "07205", "07206", "07207", "07208", "07209", "07210", "07211", "07212", "07300", "07301", "07302",
-          "07399", "07999", "08000", "08001", "08002", "08003", "08004", "08005", "08006", "08007", "08008", "08999",
-          "09000", "09100", "09101", "09102", "09103", "09104", "09105", "09106", "09107", "09108", "09109", "09199",
-          "09200", "09201", "09202", "09299", "09301", "09999", "10000",
-          "10001", "10002", "10003", "10004", "10005", "10100", "10101", "10102", "10103", "10104", "10105", "10106",
-          "10107", "10199", "10200", "10201", "10202", "10299", "10300", "10301", "10302", "10303", "10399", "10999",
-          "11000", "11100", "11101", "11102", "11103", "11104", "11199", "11201", "11202", "11203", "11999", "12000",
-          "12001", "12100", "12101", "12102", "12103", "12104", "12105", "12199", "12200", "12201", "12202", "12203",
-          "12299", "12999", "13000", "13001", "13002", "13003", "13004", "13005", "13006", "13007", "13008", "13009",
-          "13010", "13011", "13012", "13100", "13101", "13102", "13103", "13104", "13105", "13106", "13107", "13108",
-          "13109", "13110", "13999", "14000", "14100", "14101", "14102", "14103", "14199", "14200", "14201", "14202",
-          "14203", "14204", "14299", "15000", "15001", "15100", "15101", "15102", "15103", "15199", "15200", "15201",
-          "15202", "15203", "15204", "15205", "15299", "15300", "15999", "16000", "16001", "16002", "16003", "16004",
-          "16005", "16006", "16007", "16008", "16009", "16010", "16011", "16012", "16013", "16999", "17000", "17100",
-          "17200", "17300", "17301", "17302", "17303", "17304", "17305", "17306", "17307", "17308", "17309", "17999",
-          "18000", "18001", "18002", "18003", "18004", "18100", "18101", "18102", "18103", "18999", "19000", "19001",
-          "19002", "19003", "19004", "19005", "19006", "19007", "19008", "19009", "19010", "19011", "19012", "19013",
-          "19014", "19015", "19016", "19017", "19018", "19019", "19020", "19021", "19999", "20000", "20001", "20002",
-          "20003", "20004", "20005", "20006", "20007", "20008", "20009", "20010", "20999", "21000", "21001", "21002",
-          "21003", "21004", "21005", "21006", "21100", "21101", "21102", "21103", "21104", "21105", "21200", "21201",
-          "21202", "21203", "21204", "21205", "21206", "21207", "21299", "21999", "22000", "22001", "22002", "22003",
-          "22004", "22005", "22999", "23000", "23001", "23002", "23003", "23004", "23005", "23006", "23007", "23100",
-          "23101", "23102", "23103", "23200", "23201", "23202", "23203", "23999", "24000", "24001", "24002", "24003",
-          "24004", "24100", "24101", "24102", "24103", "24104", "24105", "24999", "25000", "25001", "25999", "26000",
-          "26001", "26002", "26003", "26004", "26005", "26006", "26999", "27000", "27001", "27002", "27003", "27004",
-          "27005", "27006", "27007", "27008", "27009", "27999", "28000", "28001", "28002", "28003", "28004", "28005",
-          "28006", "28007", "28008", "28009", "28010", "28011", "28012", "28013", "28014", "28015", "28016", "28999",
-          "29000", "29001", "Z3000", "Z3001", "Z3002", "Z3003", "Z3004", "Z3005", "Z3006", "Z3007", "Z3008", "Z3009", 
-          "Z3010", "Z3011", "Z3012", "Z3014", "Z3015", "Z3016", "Z3017", "Z3018", "Z3019", "Z3020", "Z3021", "Z3022",
-          "Z3023", "Z3100", "Z3101", "Z3102", "Z3103", "Z3104", "Z3105", "Z3106", "Z3107", "Z3108", "Z3109", "Z3199",
-          "Z3201", "Z3202", "Z3203", "Z3204", "Z3205", "Z3206", "Z3207", "Z3208", "Z3209", "Z3210", "Z3211", "Z3212",
-          "Z3214", "Z3215", "Z3216", "Z3217", "Z3218", "Z3219", "Z3220", "Z3221", "Z3300", "Z3301", "Z3302", "Z3303",
-          "Z3304", "Z3305", "Z3306", "Z3307", "Z3399", "Z3400", "Z3401", "Z3402", "Z3403", "Z3499", "Z3500", "Z3501",
-          "Z3502", "Z3503", "Z3599", "Z3600", "Z3601", "Z3602", "Z3603", "Z3604", "Z3699", "Z3999", "Z5000", "Z6000",
-          "Z6205", "Z6999", "Z7001", "Z7002", "Z8000", "Z8999", "Z9000", "Z9001", "Z9999" 
-      }));
+      mainPurpsCDComboBox.setModel(new DefaultComboBoxModel(new MainPurpsArray().mainPurpsCD));
       try {
-        jComboBox11.setSelectedItem(name.toString());
+        mainPurpsCDComboBox.setSelectedItem(name.toString());
      } catch (Exception e) {
      }
   }
   
   @SuppressWarnings({"unchecked", "rawtypes"})
   public void setRoofNM(String name) {
-      jComboBox9.setModel(new DefaultComboBoxModel(new String[] { "지붕구조명칭", "(철근)콘크리트", "기와", "슬레이트", "기타지붕" }));
+      roofNMComboBox.setModel(new DefaultComboBoxModel(new RoofArray().roofNM));
       try {
-        jComboBox9.setSelectedItem(name.toString());
+        roofNMComboBox.setSelectedItem(name.toString());
      } catch (Exception e) {
      }
   }
   
   @SuppressWarnings({"rawtypes", "unchecked"})
   public void setRoofCD(String name) {
-      jComboBox10.setModel(new DefaultComboBoxModel(new String[] { "코드", "10", "20", "30", "90" }));
+      roofCDComboBox.setModel(new DefaultComboBoxModel(new RoofArray().roofCD));
       try {
-        jComboBox10.setSelectedItem(name.toString());
+        roofCDComboBox.setSelectedItem(name.toString());
      } catch (Exception e) {
      }
   }

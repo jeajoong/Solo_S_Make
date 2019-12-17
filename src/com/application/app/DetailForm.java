@@ -1,11 +1,10 @@
 package com.application.app;
 
 import java.awt.BorderLayout;
-import java.awt.Choice;
+import java.awt.Color;
 import java.awt.Desktop;
 import java.awt.EventQueue;
 import java.awt.Font;
-import java.awt.List;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -17,14 +16,18 @@ import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.Enumeration;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.LayoutStyle;
 import javax.swing.WindowConstants;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import org.apache.poi.ss.usermodel.PrintSetup;
@@ -32,11 +35,16 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import com.application.db.DBBuildDetail;
+import com.application.dto.Build;
+import com.application.dto.BuildInfo;
+import com.application.dto.Floor;
+import com.application.dto.Member;
+import com.application.dto.Owner;
+import com.application.requireClass.MainPurpsArray;
 import com.application.requireClass.MultiLineHeaderRenderer;
-import com.application.vo.Build;
-import com.application.vo.BuildInfo;
-import com.application.vo.Floor;
-import com.application.vo.Owner;
+import com.application.requireClass.RoofArray;
+import com.application.requireClass.StrctArray;
+import keeptoo.KGradientPanel;
 
 // DetailForm => 일반건축물대장  대장종류 (번호) : 2
 // 각 항목 변수이름 지정.
@@ -49,6 +57,7 @@ public class DetailForm extends JFrame implements ActionListener{
   Build build;
   SearchBuild searchPage;
   DetailForm detailForm;
+  Member member;
   DBBuildDetail dbBuildDetail = new DBBuildDetail();
   
   int grndFlr;
@@ -57,6 +66,7 @@ public class DetailForm extends JFrame implements ActionListener{
   public DetailForm() {
     dtlform();
     returnBtn.addActionListener(this);
+    reviseBtn.addActionListener(this);
     printBtn.addActionListener(this);
     
     jComboBox1.addActionListener(this);
@@ -77,11 +87,10 @@ public class DetailForm extends JFrame implements ActionListener{
   }
   
   JButton returnBtn = new JButton(); // 돌아가기 버튼(searchBuild로)
-  JButton alterBtn = new JButton();  // 수정하기 버튼
+  JButton reviseBtn = new JButton();  // 수정하기 버튼
   JButton printBtn = new JButton(); // 출력버튼
   
   JScrollPane jScrollPane1 = new JScrollPane();
-  JTable jTable1 = new JTable();
   JLabel entirLbl = new JLabel();
   
   JLabel regstrLbl = new JLabel();
@@ -150,6 +159,9 @@ public class DetailForm extends JFrame implements ActionListener{
   JComboBox roofNMComboBox = new JComboBox(); // 지붕명칭
   JComboBox roofCDComboBox = new JComboBox(); // 지붕코드
   
+  
+  KGradientPanel kGradientPanel1 = new KGradientPanel();
+  
   DefaultTableModel floorModel = new DefaultTableModel(); // 층별 정보 모델1
   JScrollPane jScrollPane2 = new JScrollPane(); 
   JTable floorInfoTable = new JTable(floorModel);         // 층별정보 테이블
@@ -159,12 +171,12 @@ public class DetailForm extends JFrame implements ActionListener{
   JTable ownerInfoTable = new JTable(ownerModel);         // 소유자 테이블
   
   
+  
   private void dtlform() {
-
     setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
     returnBtn.setText("돌아가기");              // (리스트) 돌아가기 버튼
-    alterBtn.setText("수정하기");               // 수정하기 버튼
+    reviseBtn.setText("수정하기");               // 수정하기 버튼
     printBtn.setText("엑셀저장 후 인쇄");          // 인쇄하기 버튼
     
     entirLbl.setText("해당 주소의 전체주소 ");        // 상단 전체주소 라벨
@@ -210,6 +222,8 @@ public class DetailForm extends JFrame implements ActionListener{
     mainPurpsLbl.setText("주용도");              // 주용도 라벨
     grndFlrCntLbl.setText("층수");               // 층수 라벨
     grndFlrField.setText("층수");           // 층수 텍스트구역
+    grndFlrField.setText(Integer.toString(grndFlr));
+    
     bcRatLbl.setText("건폐율");              // 건폐율 라벨
     bcRatField.setText("건폐율");          // 건폐율 텍스트구역
     vlRatLbl.setText("용적률");              // 용적률 라벨
@@ -219,7 +233,6 @@ public class DetailForm extends JFrame implements ActionListener{
     roofLbl.setText("지붕");               // 지붕 라벨
     atchBldLbl.setText("부속건축물");           // 부속건축물 라벨
     atchBldField.setText("부속건축물");       // 부속건축물 텍스트구역
-    
     
     jLabel20.setText("조경면적");            // 조경면적 라벨
     jTextField15.setText("조경면적");        // 조경면적 텍스트구역
@@ -243,14 +256,14 @@ public class DetailForm extends JFrame implements ActionListener{
     mainPurpsCDComboBox.setModel(new DefaultComboBoxModel(new String[] { "주용도코드"}));
 
     grndFlrNMComboBox.setModel(new DefaultComboBoxModel(new String[] { "지상", "지하"}));
-
+    
     strctNMComboBox.setModel(new DefaultComboBoxModel(new String[] { "주구조명칭"}));
     strctCDComboBox.setModel(new DefaultComboBoxModel(new String[] { "코드" }));
 
     roofNMComboBox.setModel(new DefaultComboBoxModel(new String[] { "지붕명칭"}));
     roofCDComboBox.setModel(new DefaultComboBoxModel(new String[] { "코드"}));
 
-
+    
     floorModel.addColumn("구분");
     floorModel.addColumn("층별");
     floorModel.addColumn("구조");
@@ -263,8 +276,12 @@ public class DetailForm extends JFrame implements ActionListener{
       
       floorInfoTable.getTableHeader().setReorderingAllowed(false); // 층별정보 테이블 컬럼 이동불가하게 만듦
       
+    floorInfoTable.getColumn("구분").setPreferredWidth(10);
+    floorInfoTable.getColumn("층별").setPreferredWidth(10);
+    floorInfoTable.getColumn("구조").setPreferredWidth(60);
+    floorInfoTable.getColumn("용도").setPreferredWidth(120);
+    floorInfoTable.getColumn("면적(㎡)").setPreferredWidth(10);
       
-    
     ownerModel.addColumn("성명(명칭)\n 주민등록번호 \n (부동산등기용등록번호)");
     ownerModel.addColumn("\n\n\n\n\n\n\n\n\n주소");
     ownerModel.addColumn("\n\n\n\n\n\n\n\n소유권지분");
@@ -274,6 +291,12 @@ public class DetailForm extends JFrame implements ActionListener{
     ownerInfoTable.getColumn("\n\n\n\n\n\n\n\n\n주소").setPreferredWidth(100);
     ownerInfoTable.getColumn("\n\n\n\n\n\n\n\n소유권지분").setPreferredWidth(18);
     
+    
+    DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+    centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+    floorInfoTable.getColumnModel().getColumn(0).setCellRenderer(centerRenderer);
+    floorInfoTable.getColumnModel().getColumn(1).setCellRenderer(centerRenderer);
+    ownerInfoTable.getColumnModel().getColumn(2).setCellRenderer(centerRenderer);
     
     MultiLineHeaderRenderer renderer = new MultiLineHeaderRenderer();
     Enumeration e = ownerInfoTable.getColumnModel().getColumns();
@@ -288,298 +311,318 @@ public class DetailForm extends JFrame implements ActionListener{
     ownerInfoTable.getTableHeader().setReorderingAllowed(false);
     ownerInfoTable.setRowHeight(38);
     
+    floorInfoTable.setAutoCreateRowSorter(true); // 층 테이블 정렬기능
+    ownerInfoTable.setAutoCreateRowSorter(true); // 소유자 테이블 정렬기능
+    
     jScrollPane3.setViewportView(ownerInfoTable);
     
+    kGradientPanel1.setkEndColor(new Color(255, 255, 153));
+    kGradientPanel1.setkStartColor(new Color(0, 153, 153));
     
-    javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+    // 디자인 설정구간
+    javax.swing.GroupLayout kGradientPanel1Layout = new javax.swing.GroupLayout(kGradientPanel1);
+    kGradientPanel1.setLayout(kGradientPanel1Layout);
+    kGradientPanel1Layout.setHorizontalGroup(
+        kGradientPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        .addGap(0, 1100, Short.MAX_VALUE)
+    );
+    kGradientPanel1Layout.setVerticalGroup(
+        kGradientPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        .addGap(0, 600, Short.MAX_VALUE)
+    );
+    
+    GroupLayout layout = new GroupLayout(getContentPane());
     getContentPane().setLayout(layout);
     layout.setHorizontalGroup(
-        layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        layout.createParallelGroup(GroupLayout.Alignment.LEADING)
         .addGroup(layout.createSequentialGroup()
             .addGap(110, 110, 110)
-            .addComponent(entirLbl, javax.swing.GroupLayout.PREFERRED_SIZE, 710, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+            .addComponent(entirLbl, GroupLayout.PREFERRED_SIZE, 710, GroupLayout.PREFERRED_SIZE)
+            .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
             .addComponent(returnBtn)
-            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-            .addComponent(alterBtn)
-            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+            .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
+            .addComponent(reviseBtn)
+            .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
             .addComponent(printBtn)
-            .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         .addGroup(layout.createSequentialGroup()
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                 .addGroup(layout.createSequentialGroup()
                     .addGap(40, 40, 40)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addComponent(regstrLbl)
                         .addComponent(platLocLbl))
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
+                    .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addGroup(layout.createSequentialGroup()
-                            .addComponent(platLocField, javax.swing.GroupLayout.PREFERRED_SIZE, 229, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 60, Short.MAX_VALUE)
+                            .addComponent(platLocField, GroupLayout.PREFERRED_SIZE, 229, GroupLayout.PREFERRED_SIZE)
+                            .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, 60, Short.MAX_VALUE)
                             .addComponent(jiBunLbl)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                            .addComponent(jiBunField, javax.swing.GroupLayout.PREFERRED_SIZE, 211, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
+                            .addComponent(jiBunField, GroupLayout.PREFERRED_SIZE, 211, GroupLayout.PREFERRED_SIZE)
                             .addGap(27, 27, 27)
                             .addComponent(platNewLocLbl)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                            .addComponent(platNewLocField, javax.swing.GroupLayout.PREFERRED_SIZE, 356, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                            .addComponent(regstrField, javax.swing.GroupLayout.PREFERRED_SIZE, 415, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
+                            .addComponent(platNewLocField, GroupLayout.PREFERRED_SIZE, 356, GroupLayout.PREFERRED_SIZE))
+                        .addGroup(GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                            .addComponent(regstrField, GroupLayout.PREFERRED_SIZE, 415, GroupLayout.PREFERRED_SIZE)
                             .addGap(29, 29, 29)
                             .addComponent(bldNMLbl)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                            .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
                             .addComponent(bldNMField)
                             .addGap(18, 18, 18)
                             .addComponent(spcmtLbl)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                            .addComponent(spcmtField, javax.swing.GroupLayout.PREFERRED_SIZE, 228, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                            .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
+                            .addComponent(spcmtField, GroupLayout.PREFERRED_SIZE, 228, GroupLayout.PREFERRED_SIZE))))
                 .addGroup(layout.createSequentialGroup()
                     .addGap(42, 42, 42)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addGroup(layout.createSequentialGroup()
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                 .addComponent(floorInfoLbl)
-                                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 515, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(jScrollPane2, GroupLayout.PREFERRED_SIZE, 515, GroupLayout.PREFERRED_SIZE))
                             .addGap(18, 18, 18)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                 .addComponent(jScrollPane3)
                                 .addGroup(layout.createSequentialGroup()
                                     .addComponent(ownerInfoLbl)
                                     .addGap(0, 0, Short.MAX_VALUE))))
                         .addGroup(layout.createSequentialGroup()
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
                                     .addGroup(layout.createSequentialGroup()
                                         .addComponent(archAreaLbl)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
                                         .addComponent(archAreaField))
                                     .addGroup(layout.createSequentialGroup()
                                         .addComponent(bcRatLbl)
                                         .addGap(24, 24, 24)
-                                        .addComponent(bcRatField, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addComponent(bcRatField, GroupLayout.PREFERRED_SIZE, 63, GroupLayout.PREFERRED_SIZE))
                                     .addGroup(layout.createSequentialGroup()
                                         .addComponent(jLabel20)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                        .addComponent(jTextField15, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                        .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addComponent(jTextField15, GroupLayout.PREFERRED_SIZE, 63, GroupLayout.PREFERRED_SIZE)))
                                 .addGroup(layout.createSequentialGroup()
                                     .addComponent(platAreaLbl)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                    .addComponent(platAreaField, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
+                                    .addComponent(platAreaField, GroupLayout.PREFERRED_SIZE, 63, GroupLayout.PREFERRED_SIZE)))
+                            .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
                                 .addGroup(layout.createSequentialGroup()
                                     .addComponent(jLabel26)
                                     .addGap(18, 18, 18)
-                                    .addComponent(jTextField17, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addComponent(jTextField17, GroupLayout.PREFERRED_SIZE, 63, GroupLayout.PREFERRED_SIZE))
                                 .addGroup(layout.createSequentialGroup()
                                     .addComponent(totAreaLbl)
                                     .addGap(58, 58, 58)
-                                    .addComponent(totAreaField, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addComponent(totAreaField, GroupLayout.PREFERRED_SIZE, 63, GroupLayout.PREFERRED_SIZE))
                                 .addGroup(layout.createSequentialGroup()
                                     .addComponent(vlRatLbl)
                                     .addGap(59, 59, 59)
-                                    .addComponent(vlRatField, javax.swing.GroupLayout.DEFAULT_SIZE, 63, Short.MAX_VALUE))
+                                    .addComponent(vlRatField, GroupLayout.DEFAULT_SIZE, 63, Short.MAX_VALUE))
                                 .addGroup(layout.createSequentialGroup()
                                     .addComponent(vlRatEstmTotAreaLbl)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(vlRatEstmTotAreaField, javax.swing.GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)))
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(vlRatEstmTotAreaField, GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)))
+                            .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
                                 .addGroup(layout.createSequentialGroup()
                                     .addComponent(jLabel27)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                    .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
                                     .addComponent(jTextField20))
                                 .addGroup(layout.createSequentialGroup()
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(strctLbl, javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                            .addComponent(strctLbl, GroupLayout.Alignment.TRAILING)
                                             .addComponent(jLabel13))
                                         .addComponent(heitLbl))
                                     .addGap(18, 18, 18)
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                        .addComponent(jComboBox1, javax.swing.GroupLayout.Alignment.TRAILING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                            .addComponent(strctNMComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                            .addComponent(strctCDComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
+                                        .addComponent(jComboBox1, GroupLayout.Alignment.TRAILING, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addGroup(GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                            .addComponent(strctNMComboBox, GroupLayout.PREFERRED_SIZE, 117, GroupLayout.PREFERRED_SIZE)
+                                            .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                            .addComponent(strctCDComboBox, GroupLayout.PREFERRED_SIZE, 51, GroupLayout.PREFERRED_SIZE))
                                         .addComponent(heitField))))
                             .addGap(30, 30, 30)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
                                     .addGroup(layout.createSequentialGroup()
-                                        .addComponent(jLabel28, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(jLabel28, GroupLayout.PREFERRED_SIZE, 99, GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(jTextField25))
                                     .addGroup(layout.createSequentialGroup()
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                             .addComponent(roofLbl)
                                             .addComponent(jLabel14))
                                         .addGap(30, 30, 30)
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                             .addGroup(layout.createSequentialGroup()
-                                                .addComponent(roofNMComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addComponent(roofCDComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                            .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, 214, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                                .addComponent(roofNMComboBox, GroupLayout.PREFERRED_SIZE, 133, GroupLayout.PREFERRED_SIZE)
+                                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(roofCDComboBox, GroupLayout.PREFERRED_SIZE, 74, GroupLayout.PREFERRED_SIZE))
+                                            .addComponent(jComboBox2, GroupLayout.PREFERRED_SIZE, 214, GroupLayout.PREFERRED_SIZE))
                                         .addGap(9, 9, 9)))
                                 .addGroup(layout.createSequentialGroup()
-                                    .addComponent(mainPurpsLbl, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(mainPurpsLbl, GroupLayout.PREFERRED_SIZE, 36, GroupLayout.PREFERRED_SIZE)
                                     .addGap(18, 18, 18)
-                                    .addComponent(mainPurpsNMComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(mainPurpsCDComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(mainPurpsNMComboBox, GroupLayout.PREFERRED_SIZE, 133, GroupLayout.PREFERRED_SIZE)
+                                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(mainPurpsCDComboBox, GroupLayout.PREFERRED_SIZE, 74, GroupLayout.PREFERRED_SIZE)
                                     .addGap(25, 25, 25)
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
                                         .addGroup(layout.createSequentialGroup()
                                             .addComponent(atchBldLbl)
-                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                            .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
                                             .addComponent(atchBldField))
                                         .addGroup(layout.createSequentialGroup()
-                                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                            .addGroup(layout.createParallelGroup(GroupLayout.Alignment.TRAILING)
                                                 .addComponent(grndFlrCntLbl)
                                                 .addComponent(jLabel15))
-                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                                .addComponent(jComboBox4, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                            .addGroup(layout.createParallelGroup(GroupLayout.Alignment.TRAILING, false)
+                                                .addComponent(jComboBox4, GroupLayout.PREFERRED_SIZE, 132, GroupLayout.PREFERRED_SIZE)
                                                 .addGroup(layout.createSequentialGroup()
                                                     .addComponent(grndFlrField)
-                                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                    .addComponent(grndFlrNMComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)))))))))))
+                                                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                                    .addComponent(grndFlrNMComboBox, GroupLayout.PREFERRED_SIZE, 75, GroupLayout.PREFERRED_SIZE)))))))))))
             .addContainerGap())
-        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-            .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        .addGroup(GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+            .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(buildInfoLbl)
             .addGap(508, 508, 508))
+        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(kGradientPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
     );
     layout.setVerticalGroup(
-        layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        layout.createParallelGroup(GroupLayout.Alignment.LEADING)
         .addGroup(layout.createSequentialGroup()
             .addGap(31, 31, 31)
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                .addComponent(entirLbl, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                .addComponent(entirLbl, GroupLayout.PREFERRED_SIZE, 28, GroupLayout.PREFERRED_SIZE)
                 .addComponent(returnBtn)
-                .addComponent(alterBtn)
+                .addComponent(reviseBtn)
                 .addComponent(printBtn))
             .addGap(18, 18, 18)
             .addComponent(buildInfoLbl)
-            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+            .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+            .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                 .addComponent(regstrLbl)
-                .addComponent(regstrField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(regstrField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                 .addComponent(bldNMLbl)
                 .addComponent(spcmtLbl)
-                .addComponent(bldNMField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addComponent(spcmtField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addComponent(bldNMField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addComponent(spcmtField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+            .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
+            .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                 .addComponent(platLocLbl)
                 .addComponent(jiBunLbl)
                 .addComponent(platNewLocLbl)
-                .addComponent(platLocField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addComponent(jiBunField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addComponent(platNewLocField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(platLocField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addComponent(jiBunField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addComponent(platNewLocField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
             .addGap(30, 30, 30)
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                 .addGroup(layout.createSequentialGroup()
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(layout.createParallelGroup(GroupLayout.Alignment.TRAILING)
                         .addGroup(layout.createSequentialGroup()
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                                 .addComponent(jLabel15)
-                                .addComponent(jComboBox4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(jComboBox4, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                             .addGap(18, 18, 18)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                                 .addComponent(grndFlrCntLbl)
-                                .addComponent(grndFlrField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(grndFlrNMComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(grndFlrField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                .addComponent(grndFlrNMComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                             .addGap(18, 18, 18)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                                 .addComponent(atchBldLbl)
-                                .addComponent(atchBldField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(atchBldField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                             .addGap(18, 18, 18)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                                 .addComponent(jLabel28)
-                                .addComponent(jTextField25, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addComponent(jTextField25, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
                         .addGroup(layout.createSequentialGroup()
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                 .addGroup(layout.createSequentialGroup()
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addGroup(layout.createParallelGroup(GroupLayout.Alignment.TRAILING)
                                         .addComponent(totAreaLbl)
-                                        .addComponent(totAreaField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addComponent(totAreaField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                                     .addGap(18, 18, 18))
-                                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addGroup(GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                    .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                        .addGroup(GroupLayout.Alignment.TRAILING, layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                                             .addComponent(jLabel13)
-                                            .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                            .addComponent(jComboBox1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                                        .addGroup(GroupLayout.Alignment.TRAILING, layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                                             .addComponent(platAreaLbl)
-                                            .addComponent(platAreaField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                            .addComponent(platAreaField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
                                     .addGap(18, 18, 18)))
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
                                 .addGroup(layout.createSequentialGroup()
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addGroup(layout.createParallelGroup(GroupLayout.Alignment.TRAILING)
+                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                                             .addComponent(archAreaLbl)
-                                            .addComponent(archAreaField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                            .addComponent(archAreaField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                                             .addComponent(vlRatEstmTotAreaLbl)
-                                            .addComponent(vlRatEstmTotAreaField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                        .addComponent(vlRatField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(vlRatEstmTotAreaField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
+                                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                        .addComponent(vlRatField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                                         .addComponent(bcRatLbl)
-                                        .addComponent(bcRatField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(bcRatField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                                         .addComponent(vlRatLbl))
                                     .addGap(18, 18, 18)
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addGroup(layout.createParallelGroup(GroupLayout.Alignment.TRAILING)
+                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                                             .addComponent(jLabel20)
-                                            .addComponent(jTextField15, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                            .addComponent(jTextField15, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                                             .addComponent(jLabel26)
-                                            .addComponent(jTextField17, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                                            .addComponent(jTextField17, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))))
                                 .addGroup(layout.createSequentialGroup()
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                                         .addComponent(strctLbl)
-                                        .addComponent(strctNMComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(strctCDComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addComponent(strctNMComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(strctCDComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                                     .addGap(18, 18, 18)
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                                         .addComponent(heitLbl)
-                                        .addComponent(heitField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addComponent(heitField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                                     .addGap(18, 18, 18)
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                                         .addComponent(jLabel27)
-                                        .addComponent(jTextField20, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))))
+                                        .addComponent(jTextField20, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))))))
                     .addGap(26, 26, 26)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                         .addComponent(floorInfoLbl)
                         .addComponent(ownerInfoLbl)))
                 .addGroup(layout.createSequentialGroup()
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                         .addComponent(jLabel14)
-                        .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(jComboBox2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                     .addGap(18, 18, 18)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                         .addComponent(mainPurpsLbl)
-                        .addComponent(mainPurpsNMComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(mainPurpsCDComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(mainPurpsNMComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                        .addComponent(mainPurpsCDComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                     .addGap(18, 18, 18)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                         .addComponent(roofLbl)
-                        .addComponent(roofNMComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(roofCDComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                        .addComponent(roofNMComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                        .addComponent(roofCDComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))))
             .addGap(13, 13, 13)
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                .addComponent(jScrollPane2, GroupLayout.PREFERRED_SIZE, 200, GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane3, GroupLayout.PREFERRED_SIZE, 200, GroupLayout.PREFERRED_SIZE))
             .addGap(30, 30, 30))
+        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(kGradientPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
     );
 
     pack();
 }
-  
   public void setMain(MainProcess main) {
     this.main = main;
   }
@@ -596,8 +639,12 @@ public class DetailForm extends JFrame implements ActionListener{
     this.buildInfo = buildInfo;
   }
   
+  public void setMember(Member member) {
+    this.member = member;
+  }
+  
   public static void main(String args[]) {
-    
+    // invokeLater는 전달된 Runnable 객체가 event dispatch thread에서 실행되도록 큐에 넣고 곧바로 리턴한다
     EventQueue.invokeLater(new Runnable() {
         public void run() {
             new DetailForm().setVisible(true);
@@ -606,8 +653,6 @@ public class DetailForm extends JFrame implements ActionListener{
 
   }
 
-
-  
   // 동작이벤트 처리 메서드
   @Override
   public void actionPerformed(ActionEvent e) {
@@ -628,14 +673,12 @@ public class DetailForm extends JFrame implements ActionListener{
         }
     }
     
-    if(select == alterBtn) {
-//        try {
-          updateInfo();
-//        } catch (IOException e1) {
-//          e1.printStackTrace();
-//        } catch (SQLException e1) {
-//          e1.printStackTrace();
-//        }
+    if(select == reviseBtn) {
+      try {
+        updateInfo();
+      } catch (SQLException e1) {
+        e1.printStackTrace();
+      }
     }
     
  // 주구조 코드 ComboBox의 항목을 선택했을 때.
@@ -741,39 +784,60 @@ public class DetailForm extends JFrame implements ActionListener{
     
   }
   
-  public void updateInfo() {;
-    Build reviseBuildInfo = this.build;
-    reviseBuildInfo.setBldNM(bldNMField.getText());  // 건물명(명칭)
-    reviseBuildInfo.setSpcmt(spcmtField.getText());  // 특이사항
+  
+  // 업데이트 해주는 메소드
+  public void updateInfo() throws SQLException {
+    if(member.getUserGrade().equals("10")) {
+      try {  // 만약 type 오류가 나면 처리해야 함. ( 면적부분에 텍스트를 쓸 때)
+        
+      Build reviseBuildInfo = this.build;
+      reviseBuildInfo.setBldNM(bldNMField.getText());  // 건물명(명칭)
+      reviseBuildInfo.setSpcmt(spcmtField.getText());  // 특이사항
+  
+      reviseBuildInfo.setPlatArea(new BigDecimal(platAreaField.getText())); // 대지면적
+      reviseBuildInfo.setTotArea(new BigDecimal(totAreaField.getText()));  // 연면적
+      
+      // 지역, 지구, 구역 
+      reviseBuildInfo.setArchArea(new BigDecimal(archAreaField.getText()));                // 건축면적
+      reviseBuildInfo.setVlRatEstmTotArea(new BigDecimal(vlRatEstmTotAreaField.getText()));// 용적률 산정용연면적
+      reviseBuildInfo.setStrctCD(strctCDComboBox.getSelectedItem().toString());  // 주구조코드
+      reviseBuildInfo.setMainPurpsCD(mainPurpsCDComboBox.getSelectedItem().toString()); // 주용도코드
+      
+      // reviseBuildInfo에 해당 건축물의 데이터가 이미 들어가있기 때문에 이렇게 구분지어도 둘 중에 한개만 업데이트 됨.
+      if (grndFlrNMComboBox.getSelectedItem().equals("지상"))  // 콤보박스가 지상이면
+        reviseBuildInfo.setGrndFlrCNT(Integer.parseInt(grndFlrField.getText())); // 지상층수
+      if (grndFlrNMComboBox.getSelectedItem().equals("지하"))  // 콤보박스가 지하이면
+        reviseBuildInfo.setUgrndFlrCNT(Integer.parseInt(grndFlrField.getText())); // 지하층수
+      
+      
+      reviseBuildInfo.setBcRat(new BigDecimal(bcRatField.getText()));            // 건폐율
+      reviseBuildInfo.setVlRat(new BigDecimal(vlRatField.getText())); // 용적률
+      reviseBuildInfo.setHeit(Float.parseFloat(heitField.getText()));            // 높이
+      reviseBuildInfo.setRoofCD(roofCDComboBox.getSelectedItem().toString());    // 지붕구조코드
+      reviseBuildInfo.setAtchBldCnt(Integer.parseInt(atchBldField.getText()));  // 부속건축물 수
+      
+      
+       // 업데이트 확인창 띄우기
+      String[] buttons = {"확인", "취소하기"};
+      
+      int checkStatus = 0;
+      checkStatus = JOptionPane.showOptionDialog(null, "업데이트 하시겠습니까?", "업데이트", 
+                    JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, buttons, "확인");
+      // 확인을 눌렀을 때 0, 취소를 눌렀을 때 1
+      
+      if(checkStatus == 0) { 
+          dbBuildDetail.updateBuild(reviseBuildInfo);
+      }
 
-    reviseBuildInfo.setPlatArea(new BigDecimal(platLocField.getText())); // 대지면적
-    reviseBuildInfo.setTotArea(new BigDecimal(totAreaField.getText()));  // 연면적
-    
-    // 지역, 지구, 구역 
-
-    reviseBuildInfo.setArchArea(new BigDecimal(archAreaField.getText()));                // 건축면적
-    reviseBuildInfo.setVlRatEstmTotArea(new BigDecimal(vlRatEstmTotAreaField.getText()));// 용적률 산정용연면적
-    
-    reviseBuildInfo.setStrctCD(strctCDComboBox.getSelectedItem().toString());  // 주구조코드
-    reviseBuildInfo.setMainPurpsCD(mainPurpsCDComboBox.getSelectedItem().toString()); // 주용도코드
-    if (grndFlrNMComboBox.getSelectedItem().equals("지상"))  // 콤보박스가 지상이면
-      reviseBuildInfo.setGrndFlrCNT(Integer.parseInt(grndFlrField.getText())); // 지상층수
-    if (grndFlrNMComboBox.getSelectedItem().equals("지하"))  // 콤보박스가 지하이면
-      reviseBuildInfo.setUgrndFlrCNT(Integer.parseInt(grndFlrField.getText())); // 지하층수
-    
-    reviseBuildInfo.setBcRat(new BigDecimal(bcRatField.getText()));            // 건폐율
-    reviseBuildInfo.setVlRat(new BigDecimal(vlRatEstmTotAreaField.getText())); // 용적률
-    reviseBuildInfo.setHeit(Float.parseFloat(heitField.getText()));            // 높이
-    reviseBuildInfo.setRoofCD(roofCDComboBox.getSelectedItem().toString());    // 지붕구조코드
-    reviseBuildInfo.setAtchBldCnt(Integer.parseInt(archAreaField.getText()));
-    
-    
-    // update 쿼리문 만들어야 함.
-    dbBuildDetail.updateBuild(reviseBuildInfo);
-    
-    
+      } catch (Exception e) {
+      
+      }
+    } else {
+      JOptionPane.showMessageDialog(reviseBtn, "관리자 등급만 업데이트 할 수 있습니다.");
+    }
   }
 
+  
   // 엑셀에 건축물 정보 저장 후 인쇄하기 (Poi 라이브러리 사용) 
   public void printWork(Build build) throws IOException, SQLException {
     
@@ -864,7 +928,7 @@ public class DetailForm extends JFrame implements ActionListener{
       workbook.removeSheetAt(1);
       
       // 파일출력
-      File xlsFile = new File("C:/Users/seoin_01/Desktop/project/src/com/resource/"+regstrField.getText()+"_일반건축물대장.xlsx");
+      File xlsFile = new File("C:/Users/seoin_01/Desktop/project/src/com/resource/"+build.getBuildingPK()+"_일반건축물대장.xlsx");
       FileOutputStream fileOut = new FileOutputStream(xlsFile);
       workbook.write(fileOut);
       
@@ -912,7 +976,7 @@ public class DetailForm extends JFrame implements ActionListener{
           sheet2.getRow(7).getCell(2).setCellValue(platLocField.getText());  // 대지위치
           sheet2.getRow(7).getCell(6).setCellValue(jiBunField.getText());  // 지번
           
-          // 층별 현황을 출력
+          // 층별 현황 출력
           if (floorList.size() > 7) {
             for (int j = 12; j < 12 + floorList.size()-flrStartInt; j++) {
               sheet2.getRow(j).getCell(2).setCellValue((String) floorModel.getValueAt(flrCheckSum + flrStartInt, 0)); //구분
@@ -931,7 +995,7 @@ public class DetailForm extends JFrame implements ActionListener{
               flrStartInt = flrStartInt + 18; // 배열 시작위치 재정의
           }
           
-          // 소유자 현황을 출력
+          // 소유자 현황 출력
             if(ownerList.size() > 3) {        
               for(int k = 12; k < 12 + ownerList.size() - ownrStartInt; k++) {
                 if(2 * ownrCheckSum < ownerList.size()) {
@@ -939,9 +1003,8 @@ public class DetailForm extends JFrame implements ActionListener{
                 sheet2.getRow(12 + (2 * ownrCheckSum)).getCell(9).setCellValue((String) ownerModel.getValueAt(ownrCheckSum + ownrStartInt, 2)); //소유권 지분
                 
                 ownrCheckSum = ownrCheckSum + 1;
-              if(ownrCheckSum == 9) { 
+              if(ownrCheckSum == 9) 
                 break;
-              }
               }
               }
               ownrCheckSum = 0; 
@@ -959,7 +1022,7 @@ public class DetailForm extends JFrame implements ActionListener{
       workbook.removeSheetAt(printSize + 1); // 마지막 비어있는 시트 제거
       
       try {
-        File xlsFile = new File("C:/Users/seoin_01/Desktop/project/src/com/resource/"+regstrField.getText()+"_일반건축물대장.xlsx");
+        File xlsFile = new File("C:/Users/seoin_01/Desktop/project/src/com/resource/"+build.getBuildingPK()+"_일반건축물대장.xlsx");
         FileOutputStream fileOut = new FileOutputStream(xlsFile);
         workbook.write(fileOut);
         System.out.println("저장완료");
@@ -977,7 +1040,7 @@ public class DetailForm extends JFrame implements ActionListener{
         desktop = Desktop.getDesktop();
       }
       
-      desktop.print(new File("C:/Users/seoin_01/Desktop/project/src/com/resource/"+regstrField.getText()+"_일반건축물대장.xlsx"));
+      desktop.print(new File("C:/Users/seoin_01/Desktop/project/src/com/resource/"+build.getBuildingPK()+"_일반건축물대장.xlsx"));
     
   }
   
@@ -985,7 +1048,7 @@ public class DetailForm extends JFrame implements ActionListener{
   // 상세정보 폼이 실행되면 SearchPage에서 BuildInfo 객체를 받아 Building(건축물대장)의 정보를 조회해서 뿌려준다.
   public void inputBuildInfo(BuildInfo buildInfo) throws SQLException {
     entirLbl.setText(buildInfo.getSidoNM() + " " + buildInfo.getSigunguNM() + " " + buildInfo.getBjdongNM() + " " +
-                    buildInfo.getBunNum() + "-" + buildInfo.getJiNum() + buildInfo.getBldNM());
+                     buildInfo.getBunNum() + "-" + buildInfo.getJiNum() + " " + buildInfo.getBldNM());
 
     
     // 리스트에서 선택한 건물 정보로 건축물 대장을 찾음.(대장 구분코드, 대장종류, 대장 PK, bun, ji 정보로 조회)
@@ -1012,6 +1075,7 @@ public class DetailForm extends JFrame implements ActionListener{
       platAreaField.setText(stringPlatArea);
     } catch (NullPointerException e) {
       System.out.println("대지면적 데이터가 없습니다." + e);
+      platAreaField.setText("0");
     } catch (Exception e1) {
       System.out.println("에러!");
     }
@@ -1023,6 +1087,7 @@ public class DetailForm extends JFrame implements ActionListener{
       totAreaField.setText(stringTotArea);
     } catch (NullPointerException e) {
       System.out.println("연면적 데이터가 없습니다" + e);
+      totAreaField.setText("0");
     } catch (Exception e1) {
       System.out.println("에러!");
     }
@@ -1034,6 +1099,7 @@ public class DetailForm extends JFrame implements ActionListener{
       archAreaField.setText(stringArchArea);
     } catch (NullPointerException e) {
       System.out.println("건축면적 데이터가 없습니다." + e);
+      archAreaField.setText("0");
     } catch (Exception e1) {
       System.out.println("에러!");
     }
@@ -1045,6 +1111,7 @@ public class DetailForm extends JFrame implements ActionListener{
       vlRatEstmTotAreaField.setText(stringVlRatEstmTotArea);
     } catch (NullPointerException e) {
       System.out.println("용적률산정용연면적 데이터가 없습니다." + e);
+      vlRatEstmTotAreaField.setText("0");
     } catch (Exception e1) {
       System.out.println("에러!");
     }
@@ -1080,6 +1147,7 @@ public class DetailForm extends JFrame implements ActionListener{
       bcRatField.setText(stringBcRat);
     } catch (NullPointerException e) {
       System.out.println("건폐율 데이터가 없습니다." + e);
+      bcRatField.setText("0");
     } catch (Exception e1) {
       System.out.println("에러!");
     }
@@ -1091,6 +1159,7 @@ public class DetailForm extends JFrame implements ActionListener{
       vlRatField.setText(stringVlRat);
     } catch (NullPointerException e) {
       System.out.println("용적률 데이터가 없습니다." + e);
+      vlRatField.setText("0");
     } catch (Exception e1) {
       System.out.println("에러!");
     }
@@ -1101,6 +1170,7 @@ public class DetailForm extends JFrame implements ActionListener{
       heitField.setText(stringHeit);
     } catch (NullPointerException e) {
       System.out.println("높이 데이터가 없습니다." + e);
+      heitField.setText("0");
     } catch (Exception e1) {
       System.out.println("에러!");
     }
@@ -1117,6 +1187,7 @@ public class DetailForm extends JFrame implements ActionListener{
       atchBldField.setText(stringAtchBldCnt);
     } catch (NullPointerException e) {
       System.out.println("부속건축물 수 데이터가 없습니다."+ e);
+      atchBldField.setText("0");
     } catch (Exception e1) {
       System.out.println("에러!");
     }
@@ -1132,13 +1203,13 @@ public class DetailForm extends JFrame implements ActionListener{
     ownrTableSet(build);
     
     this.build = build;
-
+    this.buildInfo = buildInfo;
+    
   } // inputBuildInfo() 끝
 
   
   
-  
-  // 코드나 명칭을 전달하면 명칭이나 코드를 리턴하는 메서드 관련목록  
+  /* 코드나 명칭을 전달하면 명칭이나 코드를 리턴하는 메서드 관련목록 */  
   // 주구조 명칭세팅 메서드
   private String jugujoNMReset(String jgjCD) throws SQLException {
     String jugujoNM = dbBuildDetail.findjugujoNM(jgjCD);
@@ -1180,7 +1251,6 @@ public class DetailForm extends JFrame implements ActionListener{
       grndFlrField.setText(Integer.toString(urndFlr));
     }
   }
-  
   
   // 층별정보를 조회해 층별테이블에 뿌려주는 메서드
   private void flrTableSet(Build build) throws SQLException {
@@ -1238,48 +1308,23 @@ public class DetailForm extends JFrame implements ActionListener{
     }
   }
   
-  
-  
-  
-  
-  
-  
-  
-  
-  
 //  for (int i = 0; i < bjdongArray.length; i++) {
 //    bjdongComboBox.addItem(new String(bjdongArray[i]));
 //  }
 //  콤보박스에 배열을 추가시키는방법......
   
-  
-
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
   @SuppressWarnings({"unchecked", "rawtypes"})
   public void setStrctNM(String name) {
-      strctNMComboBox.setModel(new DefaultComboBoxModel(new String[] { "주용도목적", "조적구조", "벽돌구조", "블록구조", "석구조", "기타조적구조", "콘크리트구조",
-          "철근콘크리트구조", "프리케스트콘크리트구조", "기타콘크리트구조", "철골구조", "일반철골구조", "경량철골구조", "강파이프구조", "기타강구조", "철골콘크리트구조",
-          "철골철근콘크리트구조", "기타철골철근콘크리트구조", "목구조", "일반목구조", "통나무구조", "기타구조" }));
+      strctNMComboBox.setModel(new DefaultComboBoxModel(new StrctArray().strctNM));
       try {
         strctNMComboBox.setSelectedItem(name.toString());
       } catch (Exception e) {
       
       }
   }
-  
   @SuppressWarnings({"rawtypes", "unchecked"})
   public void setStrctCD(String name) {
-      strctCDComboBox.setModel(new DefaultComboBoxModel(new String[] {"코드", "10", "11", "12", "13", "19", "20", "21", "22", "29", "30", "31",
-          "32", "33", "39", "40", "41", "42", "49", "50", "51", "52", "99"}));
+      strctCDComboBox.setModel(new DefaultComboBoxModel(new StrctArray().strctCD));
       try {
         strctCDComboBox.setSelectedItem(name.toString());
       } catch (Exception e) {
@@ -1288,57 +1333,7 @@ public class DetailForm extends JFrame implements ActionListener{
   
   @SuppressWarnings({"unchecked", "rawtypes"})
   public void setMainPurpsNM(String name) {
-      mainPurpsNMComboBox.setModel(new DefaultComboBoxModel(new String[] { "주용도명칭","단독주택", "다중주택", "다가구주택", "공관", "공동주택", "아파트", "연립주택", "다세대주택", 
-          "생활편익시설", "부대시설", "복리시설", "기숙사", "제1종근린생활시설", "소매점", "휴게음식점", "이(미)용원", "일반목욕장", "의원", "체육장", "마을공동시설", "변전소", "양수장", 
-          "정수장", "대피소", "공중화장실", "세탁소", "치과의원", "한의원", "침술원", "접골원", "조산소", "탁구장", "체육도장", "마을회관", "마을공동작업소", "마을공동구판장", "지역아동센터",
-          "목욕장", "이용원", "미용원", "조산원", "제과점", "슈퍼마켓", "안마원", "공공시설", "동사무소", "경찰서", "파출소", "소방서", "우체국", "전신전화국", "방송국", "보건소", "공공도서관",
-          "지역의료보험조합", "제과점", "지역자치센터", "지구대", "지역건강보험조합", "기타공공시설", "기타제1종근생활시설", "제2종근린생활시설",
-          "일반음식점", "휴게음식점", "기원", "서점(1종근.생미해당)", "제조업소", "수리점", "게임제공업소", "사진관", "표구점", "학원", "장의사", "동물병원", "어린이집", "독서실", "총포판매소",
-          "단란주점", "의약품도매점", "자동차영업소", "안마시술소", "노래연습장", "세탁소", "멀티미디어문화컨텐츠설비제공업소", "복합유통.제공업소", "직업훈련소", "인터넷컴퓨터게임시설제공업소", 
-          "청소년게임제공업소", "복합유통게임제공업소", "제과점", "고시원", "의약품판매소", "의료기기판매소", "총포판매사", "소개업", "안마원", "고시원", "제과점", "인터넷컴퓨터게임시설제공업의시설",
-          "청소년게임제공업의시설", "복합유통게임제공업의시설", "운동시설", "테니스장", "체력단련장", "에어로빅장", "볼링장", "당구장", "실내낚시터", "골프연습장", "물놀이형시설", "기타운동시설",
-          "종교집회장", "교회", "성당", "사찰", "기도원", "수도원", "수녀원", "제실", "사당", "기타종교집회장", "공연장", "극장(영화관)", "음악당", "연예장",
-          "비디오물감상실", "비디오물소극장", "극장", "영화관", "서커스장", "기타공연장", "사무소", "금융업소", "사무소", "부동산중개업소", "결혼상담소", "출판사", "부동산중개사무소", "기타사무소",
-          "기타제2종근생활시설", "문화및집회시설", "공연장", "극장(영화관)", "음악당", "연예장", "서어커스장", "비디오물감상실", "비디오물소극장", "극장", "영화관", "기타공연장", "집회장", "예식장",
-          "회의장", "공회당", "마권장외발매소", "마권전화투표소", "기타집회장", "관람장", "경마장", "자동차경기장", "체육관", "운동장", "경륜장", "경정장", "기타관람장", "전시장", "박물관",
-          "미술관", "과학관", "기념관", "산업전시장", "박람회장", "문화관", "체험관", "기타전시장", "동.식물원", "동물원", "식물원", "수족관", "기타동.식물원", "기타문화및집회시설", "종교시설",
-          "종교집회장", "교회", "성당", "사찰", "기도원", "수도원", "수녀원", "제실", "사당", "납골당(제2종근생 제외)", "봉안당", "기타종교집회장", 
-          "기타종교시설", "판매시설", "도매시장", "소매시장", "시장", "백화점", "대형백화점", "대형점", "쇼핑센터", "기타소매시장", "상점", "게임제공업소", "멀티미디어문화컨텐츠설비제공업소",
-          "복합유통.제공업소", "인터넷컴퓨터게임시설제공업소", "청소년게임제공업소", "복합유통게임제공업소", "일반게임제공의시설", "청소년게임제공업의시설", "복합유통게임제공업의시설", "인터넷컴퓨터게임시설제공업의시설",
-          "일반게임제공업의시설", "도매시장", "농수산물도매시장", "농수산물공판장", "기타도매시장", "기타판매시설", "운수시설", "여객자동차터미널", "화물터미널", "철도역사", "공항시설", "항만시설(터미널)",
-          "종합여객시설", "철도시설", "항만시설", "기타운수시설", "의료시설", "병원", "종합병원", "산부인과병원", "치과병원", "한방병원", "정신병원", "격리병원", "병원", "요양소", "요양병원",
-          "기타병원", "격리병원", "전염병원", "마약진료소", "기타격리병원", "장례식장", "기타의료시설", "교육연구시설", "교육(연수)원", "직업훈련소", "학원",
-          "연구소", "도서관", "학교", "초등학교", "중학교", "고등학교", "대학교", "전문대학", "대학", "유치원", "기타학교", "교육원", "교육원", "연수원", "기타교육원", "연구소", "연구소",
-          "시험소", "계측계량소", "기타연구소", "기타교육연구시설", "노유자시설", "아동관련시설", "유치원", "영유아보육시설", "어린이집", "아동복지시설", "기타아동관련시설", "노인복지시설", "사회복지시설",
-          "근로복지시설", "기타노유자시설", "수련시설", "유스호스텔", "생활권수련시설","청소년수련원(관)", "유스호스텔", "청소년문화의집", "청소년특화시설", "청소년수련관", "기타생활권수련시설",
-          "자연권수련시설", "청소년수련원(관)", "청소년야영장", "청소년수련원", "기타자연권수련시설", "기타수련시설", "운동시설", "체육관", "운동장시설", "탁구장", "체육도장", "테니스장", "체력단련장",
-          "에어로빅장", "볼링장", "당구장", "실내낚시터", "골프연습장", "물놀이형시설", "운동장", "육상장", "구기장", "볼링장", "수영장", "스케이트장", "롤러스케이트장", "승마장", "사격장", "궁도장",
-          "골프장", "기타 운동시설", "업무시설", "공공업무시설", "국가기관청사", "자치단체청사", "외국공관", "기타공공업무시설", "일반업무시설", "금융업소", "오피스텔", "신문사", "사무소", "기타일반업무시설",
-          "숙박시설", "고시원", "일반숙박시설", "호텔", "여관", "여인숙", "기타일반숙박시설", "관광숙박시설", "관광호텔", "수상관광호텔", "한국전통호텔", "가족호텔", "휴양콘도미니엄", "기타관광숙박시설",
-          "고시원", "기타숙박시설", "위락시설", "단란주점", "유흥주점", "특수목욕장", "유기장", "투전기업소", "무도장(학원)", "주점영업", "카지노업소", "유원시설업의시설", "무도장", "무도학원",
-          "카지노영업소", "사행행위업소", "기타위락시설", "공장", "일반공장", "유해공장", "물품공장", "물품 제조공장", "물품 가공공장", "물품 염색공장", "물품 도장공장", "물품 표백공장", "물품 재봉공장", 
-          "물품 건조공장", "물품 인쇄공장", "물품 수리공장", "기타공장", "창고시설", "창고", "하역장", "물류터미널", "집배송시설", "창고", "일반창고", "냉장창고", "냉동창고", "기타창고시설", "위험물저장및처리시설",
-          "주유소", "액화석유가스충전소", "위험물제조소", "위험물저장소", "액화가스취급소", "액화가스판매소", "유독물보관저장시설", "고압가스충전저장소", "석유판매소", "위험물취급소", "액화석유가스판매소",
-          "액화석유가스저장소", "유독물보관소", "유독물저장소", "유독물판매시설", "고압가스충전소", "고압가스판매소", "고압가스저장소", "도료류판매소", "도시가스공급시설", "화약류저장소",
-          "기타위험물저장처리시설", "자동차관련시설", "주차장", "세차장", "폐차장", "검사장", "매매장", "정비공장", "운전학원", "정비학원", "차고", "주기장",
-          "기타자동차관련시설", "동.식물관련시설", "도축장", "도계장", "버섯재배사", "종묘배양시설", "온실", "작물재배사", "축사", "축사", "양잠", "양봉", "양어시설", "부화장",
-          "가축시설", "가축용운동시설", "인공수정센터", "관리사", "가축용창고", "가축시장", "동물검역소", "실험동물사육시설", "기타가축시설", "기타동식물관련시설", "분뇨.쓰레기처리시설",
-          "분뇨처리시설", "폐기물처리시설", "폐기물재활용시설", "고물상", "폐기물처리시설및폐기물감량화시설", "기타분뇨쓰레기처리시설",
-          "교정및군사시설", "감화원", "군사시설", "국방ㆍ군사시설", "보호관찰소", "갱생보호소", "소년원", "소년분류심사원", "교도소", "구치소", "소년원", "소년분류심사원", "교정시설",
-          "보호감호소", "구치소", "교도소", "기타교정및군사시설", "방송통신시설", "방송국", "전신전화국", "촬영소", "통신용시설", "방송국", "방송국", "방송프로그램제작시설", "송신시설",
-          "수신시설", "중계시설", "기타방송통신시설", "발전시설", "발전소", "기타발전시설", "묘지관련시설", "화장장", "납골당",
-          "묘지에 부수되는 건축물", "봉안당", "화장시설", "자연장지에 부수되는 건축물", "기타묘지관련시설", "관광휴게시설", "야외음악당", "야외극장", "어린이회관", "관망탑", "휴게소",
-          "관광지시설", "공원에 부수되는 시설", "유원지에 부수되는 시설", "관광지에 부수되는 시설", "기타관광휴게시설", "가설건축물", "재해복구용가설건축물", "가설흥행장", "가설전람회장", 
-          "공사용가설건축물", "견본주택", "가설점포", "경비용가설건축물", "임시자동차차고", "임시사무실", "임시창고", "임시숙소", "농,어업용비닐하우스",
-          "가축용가설건축물", "농,어업용고정식온실", "창고용천막", "관광문화행사용가설건축물", "기타가설건축물", "장례식장", "장례식장", "근린생활시설", "소매점", "휴게음식점", "이(미)용원",
-          "일반목욕장", "의원", "체육장", "마을공동시설", "변전소", "양수장", "정수장", "대피소", "공중화장실", "치과의원", "한의원", "침술원", "접골원", "조산소", "탁구장", "체육도장",
-          "마을공회당", "마을공동작업소", "마을공동구판장", "공공시설", "동사무소", "경찰서", "파출소", "소방서", "우체국", "전신전화국", "방송국", "보건소", "공공도서관", "기타공공시설", "일반음식점",
-          "휴게음식점", "기원", "서점", "제조업소", "수리점", "게임제공업소", "사진관", "표구점", "학원", "장의사",
-          "동물병원", "독서실", "총포판매소", "단란주점", "의약품도매점", "자동차영업소", "안마시술소", "노래연습장", "세탁소", "운동시설", "테니스장", "체력단련장", "에어로빅장", "볼링장", 
-          "당구장", "실내낚시터", "골프연습장", "기타운동시설", "종교집회장", "교회", "성당", "사찰", "기타종교집회장", "공연장", "극장(영화관)", "음악당", "연예장", "기타공연장", "사무소", "금융업소",
-          "사무소", "부동산중개업소", "결혼상담소", "기타사무소", "기타근린생활시설", "문화및집회시설", "판매및영업시설", "대규모소매점", "기타판매및영업시설", "축사", "가축시설", "교육연구및복지시설",
-          "기타교육연구및복지시설", "공공용시설", "교도소", "기타공공용시설"  
-      }));
+      mainPurpsNMComboBox.setModel(new DefaultComboBoxModel(new MainPurpsArray().mainPurpsNM));
      try {
        mainPurpsNMComboBox.setSelectedItem(name.toString());
     } catch (Exception e) {
@@ -1348,60 +1343,7 @@ public class DetailForm extends JFrame implements ActionListener{
   
   @SuppressWarnings({"unchecked", "rawtypes"})
   public void setMainPurpsCD(String name) {
-      mainPurpsCDComboBox.setModel(new DefaultComboBoxModel(new String[] {"코드", "01000", "01001", "01002", "01003", "01004", 
-          "02000", "02001", "02002", "02003", "02004", "02005", "02006", "02007", "03000", "03001", "03002", "03003", 
-          "03004", "03005", "03006", "03007", "03008", "03009", "03010", "03011", "03012", "03013", "03014", "03015",
-          "03016", "03017", "03018", "03019", "03020", "03021", "03022", "03023", "03024", "03025", "03026", "03027",
-          "03028", "03029", "03030", "03031", "03100", "03101", "03102", "03103", "03104", "03105", "03106", "03107",
-          "03108", "03109", "03110", "03111", "03112", "03113", "03114", "03199", "03999", "04000", "04001", "04002",
-          "04003", "04004", "04005", "04006", "04007", "04008", "04009", "04010", "04011", "04012", "04013", "04014",
-          "04015", "04016", "04017", "04018", "04019", "04020", "04021", "04022", "04023", "04024", "04025", "04026",
-          "04027", "04028", "04029", "04030", "04031", "04032", "04033", "04034", "04035", "04036", "04037", "04038",
-          "04039", "04100", "04101", "04102", "04103", "04104", "04105", "04106", "04107", "04108", "04199", "04200",
-          "04201", "04202", "04203", "04204", "04205", "04206", "04207", "04208", "04299", "04300", "04301", "04302", 
-          "04303", "04304", "04305", "04306", "04307", "04308", "04399", "04400", "04401", "04402", "04403", "04404",
-          "04405", "04406", "04499", "04999", "05000", "05100", "05101", "05102", "05103", "05104", "05105", "05106",
-          "05107", "05108", "05199", "05200", "05201", "05202", "05203", "05204", "05205", "05299", "05300", "05301",
-          "05302", "05303", "05304", "05305", "05306", "05399", "05400", "05401", "05402", "05403", "05404", "05405",
-          "05406", "05407", "05408", "05499", "05500", "05501", "05502", "05503", "05599", "05999", "06000", "06100",
-          "06101", "06102", "06103", "06104", "06105", "06106", "06107", "06108", "06109", "06110", "06199", "06999",
-          "07000", "07001", "07100", "07101", "07102", "07103", "07104", "07105", "07199", "07201", "07202", "07203",
-          "07204", "07205", "07206", "07207", "07208", "07209", "07210", "07211", "07212", "07300", "07301", "07302",
-          "07399", "07999", "08000", "08001", "08002", "08003", "08004", "08005", "08006", "08007", "08008", "08999",
-          "09000", "09100", "09101", "09102", "09103", "09104", "09105", "09106", "09107", "09108", "09109", "09199",
-          "09200", "09201", "09202", "09299", "09301", "09999", "10000",
-          "10001", "10002", "10003", "10004", "10005", "10100", "10101", "10102", "10103", "10104", "10105", "10106",
-          "10107", "10199", "10200", "10201", "10202", "10299", "10300", "10301", "10302", "10303", "10399", "10999",
-          "11000", "11100", "11101", "11102", "11103", "11104", "11199", "11201", "11202", "11203", "11999", "12000",
-          "12001", "12100", "12101", "12102", "12103", "12104", "12105", "12199", "12200", "12201", "12202", "12203",
-          "12299", "12999", "13000", "13001", "13002", "13003", "13004", "13005", "13006", "13007", "13008", "13009",
-          "13010", "13011", "13012", "13100", "13101", "13102", "13103", "13104", "13105", "13106", "13107", "13108",
-          "13109", "13110", "13999", "14000", "14100", "14101", "14102", "14103", "14199", "14200", "14201", "14202",
-          "14203", "14204", "14299", "15000", "15001", "15100", "15101", "15102", "15103", "15199", "15200", "15201",
-          "15202", "15203", "15204", "15205", "15299", "15300", "15999", "16000", "16001", "16002", "16003", "16004",
-          "16005", "16006", "16007", "16008", "16009", "16010", "16011", "16012", "16013", "16999", "17000", "17100",
-          "17200", "17300", "17301", "17302", "17303", "17304", "17305", "17306", "17307", "17308", "17309", "17999",
-          "18000", "18001", "18002", "18003", "18004", "18100", "18101", "18102", "18103", "18999", "19000", "19001",
-          "19002", "19003", "19004", "19005", "19006", "19007", "19008", "19009", "19010", "19011", "19012", "19013",
-          "19014", "19015", "19016", "19017", "19018", "19019", "19020", "19021", "19999", "20000", "20001", "20002",
-          "20003", "20004", "20005", "20006", "20007", "20008", "20009", "20010", "20999", "21000", "21001", "21002",
-          "21003", "21004", "21005", "21006", "21100", "21101", "21102", "21103", "21104", "21105", "21200", "21201",
-          "21202", "21203", "21204", "21205", "21206", "21207", "21299", "21999", "22000", "22001", "22002", "22003",
-          "22004", "22005", "22999", "23000", "23001", "23002", "23003", "23004", "23005", "23006", "23007", "23100",
-          "23101", "23102", "23103", "23200", "23201", "23202", "23203", "23999", "24000", "24001", "24002", "24003",
-          "24004", "24100", "24101", "24102", "24103", "24104", "24105", "24999", "25000", "25001", "25999", "26000",
-          "26001", "26002", "26003", "26004", "26005", "26006", "26999", "27000", "27001", "27002", "27003", "27004",
-          "27005", "27006", "27007", "27008", "27009", "27999", "28000", "28001", "28002", "28003", "28004", "28005",
-          "28006", "28007", "28008", "28009", "28010", "28011", "28012", "28013", "28014", "28015", "28016", "28999",
-          "29000", "29001", "Z3000", "Z3001", "Z3002", "Z3003", "Z3004", "Z3005", "Z3006", "Z3007", "Z3008", "Z3009", 
-          "Z3010", "Z3011", "Z3012", "Z3014", "Z3015", "Z3016", "Z3017", "Z3018", "Z3019", "Z3020", "Z3021", "Z3022",
-          "Z3023", "Z3100", "Z3101", "Z3102", "Z3103", "Z3104", "Z3105", "Z3106", "Z3107", "Z3108", "Z3109", "Z3199",
-          "Z3201", "Z3202", "Z3203", "Z3204", "Z3205", "Z3206", "Z3207", "Z3208", "Z3209", "Z3210", "Z3211", "Z3212",
-          "Z3214", "Z3215", "Z3216", "Z3217", "Z3218", "Z3219", "Z3220", "Z3221", "Z3300", "Z3301", "Z3302", "Z3303",
-          "Z3304", "Z3305", "Z3306", "Z3307", "Z3399", "Z3400", "Z3401", "Z3402", "Z3403", "Z3499", "Z3500", "Z3501",
-          "Z3502", "Z3503", "Z3599", "Z3600", "Z3601", "Z3602", "Z3603", "Z3604", "Z3699", "Z3999", "Z5000", "Z6000",
-          "Z6205", "Z6999", "Z7001", "Z7002", "Z8000", "Z8999", "Z9000", "Z9001", "Z9999" 
-      }));
+      mainPurpsCDComboBox.setModel(new DefaultComboBoxModel(new MainPurpsArray().mainPurpsCD));
       try {
         mainPurpsCDComboBox.setSelectedItem(name.toString());
      } catch (Exception e) {
@@ -1410,7 +1352,7 @@ public class DetailForm extends JFrame implements ActionListener{
   
   @SuppressWarnings({"unchecked", "rawtypes"})
   public void setRoofNM(String name) {
-      roofNMComboBox.setModel(new DefaultComboBoxModel(new String[] { "지붕구조명칭", "(철근)콘크리트", "기와", "슬레이트", "기타지붕" }));
+      roofNMComboBox.setModel(new DefaultComboBoxModel(new RoofArray().roofNM));
       try {
         roofNMComboBox.setSelectedItem(name.toString());
      } catch (Exception e) {
@@ -1419,15 +1361,13 @@ public class DetailForm extends JFrame implements ActionListener{
   
   @SuppressWarnings({"rawtypes", "unchecked"})
   public void setRoofCD(String name) {
-      roofCDComboBox.setModel(new DefaultComboBoxModel(new String[] { "코드", "10", "20", "30", "90" }));
+      roofCDComboBox.setModel(new DefaultComboBoxModel(new RoofArray().roofCD));
       try {
         roofCDComboBox.setSelectedItem(name.toString());
      } catch (Exception e) {
      }
   }
-  
 
-  
 }
 
 

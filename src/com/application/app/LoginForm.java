@@ -3,7 +3,10 @@ package com.application.app;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.EventQueue;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Panel;
+import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.NotActiveException;
@@ -18,31 +21,27 @@ import javax.swing.JTextField;
 import javax.swing.LayoutStyle;
 import javax.swing.WindowConstants;
 import com.application.db.DBLogin;
-import com.application.vo.Member;
+import com.application.dto.Member;
+import com.application.requireClass.RoundedButton;
+import keeptoo.KGradientPanel;
 
 public class LoginForm extends JFrame implements ActionListener{
 
   Panel loginP, mainP;
-  
-  JButton btnSubmit = new JButton(); //회원가입
-  JButton btnLogin = new JButton(); //로그인
-  JButton btnExit = new JButton(); //종료
-  
-  JButton btnBack = new JButton(); //뒤로가기
-  
+  RoundedButton btnSubmit = new RoundedButton();             //회원가입
+  RoundedButton btnLogin = new RoundedButton();              //로그인
+  RoundedButton btnExit = new RoundedButton();               //종료
+  JButton btnBack = new JButton();               //뒤로가기
   CardLayout card;
-  
-  JLabel lbId = new JLabel();    //아이디 라벨
-  JTextField idText = new JTextField(); // 입력Area
-  
-  JLabel lbPwd = new JLabel();    //비밀번호 라벨
-  JPasswordField pwdText = new JPasswordField();// 입력 Area  
-  
-  JLabel jLabel1 = new JLabel(); // 관리자/일반 표시
-  
+  JLabel lbId = new JLabel();                    // 아이디 라벨
+  JTextField idText = new JTextField();          // 입력Area
+  JLabel lbPwd = new JLabel();                   // 비밀번호 라벨
+  JPasswordField pwdText = new JPasswordField(); // 입력 Area  
+  JLabel jLabel1 = new JLabel();                 // 관리자,일반 표시하려고 선언만 해둠
+  KGradientPanel kGradientPanel1 = new KGradientPanel();
+
   DBLogin db;
   MainProcess main;
-  
   
   public LoginForm() {
     loginArea();
@@ -58,33 +57,43 @@ public class LoginForm extends JFrame implements ActionListener{
           if(loginCheck() == 1) {
             main.showMainPage(main);
           }
-        } catch (NotActiveException e1) {
-          e1.printStackTrace();
         } catch (SQLException e1) {
           e1.printStackTrace();
         }
       }
     });
   }
-  
-  
   public void loginArea() { 
-
     setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-
     btnSubmit.setText("회원가입");
     btnLogin.setText("로그인");
     btnExit.setText("종료");
-
     lbId.setText("아이디");
     idText.setText("");
-
     lbPwd.setText("비밀번호");
     pwdText.setText("");
-
     jLabel1.setText("");
-
+    
+    btnSubmit.setBackground(new Color(255,252,222));
+    btnLogin.setBackground(new Color(255,243,127));
+    btnExit.setBackground(new Color(176,34,47));
+    
+    kGradientPanel1.setkEndColor(new java.awt.Color(255, 255, 153));
+    kGradientPanel1.setkStartColor(new java.awt.Color(0, 153, 153));
+    
+    
     // 디자인 설정구간
+    javax.swing.GroupLayout kGradientPanel1Layout = new javax.swing.GroupLayout(kGradientPanel1);
+    kGradientPanel1.setLayout(kGradientPanel1Layout);
+    kGradientPanel1Layout.setHorizontalGroup(
+        kGradientPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        .addGap(0, 500, Short.MAX_VALUE)
+    );
+    kGradientPanel1Layout.setVerticalGroup(
+        kGradientPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        .addGap(0, 334, Short.MAX_VALUE)
+    );
+    
     GroupLayout layout = new GroupLayout(getContentPane());
     getContentPane().setLayout(layout);
     layout.setHorizontalGroup(
@@ -110,6 +119,8 @@ public class LoginForm extends JFrame implements ActionListener{
                                 .addComponent(btnExit, GroupLayout.PREFERRED_SIZE, 80, GroupLayout.PREFERRED_SIZE))
                             .addComponent(btnLogin, GroupLayout.Alignment.LEADING, GroupLayout.PREFERRED_SIZE, 200, GroupLayout.PREFERRED_SIZE)))))
             .addContainerGap(119, Short.MAX_VALUE))
+        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(kGradientPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
     );
     layout.setVerticalGroup(
         layout.createParallelGroup(GroupLayout.Alignment.LEADING)
@@ -131,15 +142,18 @@ public class LoginForm extends JFrame implements ActionListener{
                 .addComponent(btnSubmit, GroupLayout.PREFERRED_SIZE, 32, GroupLayout.PREFERRED_SIZE)
                 .addComponent(btnExit, GroupLayout.PREFERRED_SIZE, 32, GroupLayout.PREFERRED_SIZE))
             .addContainerGap(58, Short.MAX_VALUE))
+        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(kGradientPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
     );
 
     pack();
 }// loginForm 디자인
   
+
+  
+  
   
   public static void main(String args[]) {
-    LoginForm loginForm = new LoginForm();
-    loginForm.setDB(new DBLogin());
     
     /* Create and display the form */
     EventQueue.invokeLater(new Runnable() {
@@ -167,8 +181,6 @@ public class LoginForm extends JFrame implements ActionListener{
       if(loginCheck() == 1) {
         main.showMainPage(main);
       }
-    } catch (NotActiveException e1) {
-      e1.printStackTrace();
     } catch (SQLException e1) {
       e1.printStackTrace();
     }
@@ -189,7 +201,7 @@ public class LoginForm extends JFrame implements ActionListener{
   
   
   // 로그인 확인
-  public int loginCheck() throws NotActiveException, SQLException{
+  public int loginCheck() throws SQLException{
     
     String id = idText.getText();
     String pwd = pwdText.getText();
@@ -206,6 +218,7 @@ public class LoginForm extends JFrame implements ActionListener{
      } else {
        JOptionPane.showMessageDialog(btnLogin, "로그인을 환영합니다.");
        setBackground(Color.lightGray);
+       
        main.setMemberInfo(memberInfo);
        main.setMain(main);
        
@@ -219,8 +232,5 @@ public class LoginForm extends JFrame implements ActionListener{
     }
     return 0;
   }
-
-  
-  
   
 }

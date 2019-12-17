@@ -14,7 +14,7 @@ public class FindIP {
         sigunguCD == 46170 || sigunguCD == 48170 || sigunguCD == 48220 ||  
         sigunguCD == 48240 || sigunguCD == 48250) {
       String comIP = null;
-      comIP = "192.168.0.101";
+      comIP = "192.168.0.101"; // 업데이트 확인하기 위해 내 컴퓨터로 바꿈.
       return comIP;
     }
     if( sigunguCD == 11230 || sigunguCD == 11260 || sigunguCD == 11290 ||
@@ -131,6 +131,7 @@ public class FindIP {
       comIP = "192.168.0.110";
       return comIP;
     }
+    
     else {
      return null;
     }

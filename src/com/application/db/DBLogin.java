@@ -5,8 +5,9 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import com.application.vo.Member;
+import com.application.dto.Member;
 
+// 사용자가 로그인을 할 때 처리할 DB관련 클래스
 public class DBLogin {
   
   String driver = "oracle.jdbc.driver.OracleDriver";
@@ -14,9 +15,9 @@ public class DBLogin {
   String user = "nbem2_adm";
   String password = "nbem02";
   
-  Connection conn = null;
-  Statement stmt = null;
-  ResultSet rs = null;
+  Connection conn = null;  // Connection 객체는 데이터베이스와 연결하는 객체.(Statement 객체를 생성할 때도 Connection 객체를 사용)
+  Statement stmt = null;   // 특정한 SQL 문장을 정의하고 실행 시킬 수 있는 Statement
+  ResultSet rs = null;     // SELECT 문을 사용시 결과를 담는 객체.
   
   public DBLogin() {
     try {
@@ -28,25 +29,14 @@ public class DBLogin {
     }
   }
   
-  
   public void closeDatabase() {
-      try {
-        if(conn != null && !conn.isClosed()) {
-          conn.close();
-          System.out.println("db 자원 종료");
-        }
-        if(stmt != null && !stmt.isClosed()) {
-          stmt.close();
-          System.out.println("db 자원 종료");
-        }
-        if(rs != null && !rs.isClosed()) {
-          rs.close();
-          System.out.println("db 자원 종료");
-        }
-      }
-      catch (SQLException e) {
-          System.out.println("[닫기 오류]\n" + e.getStackTrace());
-      }
+    try {
+      rs.close();
+      stmt.close();
+      conn.close();
+    } catch (SQLException e) {
+      e.printStackTrace();
+    }
   }
   
   
@@ -67,6 +57,7 @@ public class DBLogin {
           // 2) SELECT 할 때 *으로 모든 컬럼을 가져오는 것보다 가져와야할 컬럼을 직접 명시해주는 것이 좋다.
           // 3) 원하는 결과는 쿼리로써 마무리 짓고, java 코드로 후작업하는 것은 권하지 않음
           // 4) 쿼리를 한 줄로 쓰기 어려운 경우 들여쓰기를 사용해도 되지만 띄어쓰기에 유의!!
+          
           String sql = "select USER_ID, USER_NM, PWD, USER_AUTHRT_CD from CMC_USER_MGM "+
                        " where USER_ID = '"+ id + "' and PWD = '"+ pwd + "'";
           // 테이블명과 where 사이의 공백이 필요하거나
@@ -87,6 +78,7 @@ public class DBLogin {
           
           System.out.println(checkId +" " + checkName + " " + checkPwd + " " +checkUserGrade);
           
+          closeDatabase();
       return member;
   }
   
