@@ -8,10 +8,10 @@ import java.sql.Statement;
 import com.application.dto.Member;
 
 // 사용자가 로그인을 할 때 처리할 DB관련 클래스
-public class DBLogin {
+public class DBLogin{
   
   String driver = "oracle.jdbc.driver.OracleDriver";
-  String url = "jdbc:oracle:thin:@localhost:1521:nbem2";
+  String url = "jdbc:oracle:thin:@localhost:1521:orcl";
   String user = "nbem2_adm";
   String password = "nbem02";
   
@@ -47,6 +47,7 @@ public class DBLogin {
         String checkPwd = null;
         String checkUserGrade = null;
         
+        try {
           conn = DriverManager.getConnection(url, user, password);
 
           stmt = conn.createStatement();
@@ -77,10 +78,57 @@ public class DBLogin {
           member.setUserGrade(checkUserGrade);
           
           System.out.println(checkId +" " + checkName + " " + checkPwd + " " +checkUserGrade);
-          
+        } catch (Exception e) {
+          e.printStackTrace();
+        } finally {
           closeDatabase();
+        }
       return member;
   }
+
+  // 아이디 확인용 메소드
+  public String idCheck(String inputId) throws SQLException {
+    String exist = null;
+    String grade = null;
+      try {
+      conn = DriverManager.getConnection(url, user, password);
+      stmt = conn.createStatement();
+      String sql = " select USER_ID, USER_AUTHRT_CD "
+                 + "   from CMC_USER_MGM " 
+                 + "  where USER_ID = '"+ inputId +"'";
+      
+      rs = stmt.executeQuery(sql);
+      
+      while(rs.next()) {
+       exist = rs.getString("USER_ID");
+       grade = rs.getString("USER_AUTHRT_CD");
+      }
+      } catch (Exception e) {
+        e.printStackTrace();
+        if(exist == null && grade == null) return null;
+      } finally {
+        closeDatabase();        
+      }
+    return exist + "/" + grade;
+  }
+
   
+  // 사용자 추가할때
+  public void createMember(Member member) throws SQLException {
+    try {
+    conn = DriverManager.getConnection(url, user, password);
+    stmt = conn.createStatement();
+    
+    String sql = " INSERT INTO CMC_USER_MGM(USER_ID, PWD, USER_NM, DEPT_NM, USER_AUTHRT_CD) " 
+               + " VALUES ('"+member.getId()+"', '"+member.getPwd()+"', '"+member.getName()+"', '건물에너지 유지관리사업단', '"+member.getUserGrade()+"') ";
+    
+    stmt.executeUpdate(sql);
+    } catch (Exception e) {
+      e.printStackTrace();
+    } finally {
+      closeDatabase();
+    }
+
+  }
 
 }

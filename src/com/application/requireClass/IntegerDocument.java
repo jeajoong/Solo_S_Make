@@ -1,5 +1,6 @@
 package com.application.requireClass;
-
+/* 설명...
+ * JtextField에 숫자만 입력받을 수 있게 하는 클래스. (JtextField 객체에 해당 클래스를 세팅)*/
 import javax.swing.text.*;
 
 // JtextField 에서 숫자만 입력하게 할 수 있는 기능.

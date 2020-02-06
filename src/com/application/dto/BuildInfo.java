@@ -4,7 +4,7 @@ public class BuildInfo { // 리스트 출력 전용 건물 DTO
   private String bldTypeGBCD;  // 건축물 유형 구분 코드
   private String buildingPK;   // 관리 건축물 PK
   private String regstrGBCD;   // 대장 구분 코드
-  private String regstrKINKCD; // 대장 종류 코드
+  private String regstrKINDCD; // 대장 종류 코드
   private String sidoNM;
   private String sigunguNM;
   private String bjdongNM;
@@ -13,14 +13,15 @@ public class BuildInfo { // 리스트 출력 전용 건물 DTO
   private String bldNM;
   private String mainPurpsNM;     // 주용도
   private String strctNM;    // 주구조
-  
+  private String hoNM;       // 리스트에서 검색할 때 전유부(4번)일때 몇 호인지 알수가 없어서 추가적으로 넣음.
   
   @Override
   public String toString() {
     return "BuildInfo [bldTypeGBCD=" + bldTypeGBCD + ", buildingPK=" + buildingPK + ", regstrGBCD="
-        + regstrGBCD + ", regstrKINKCD=" + regstrKINKCD + ", sidoNM=" + sidoNM + ", sigunguNM="
+        + regstrGBCD + ", regstrKINDCD=" + regstrKINDCD + ", sidoNM=" + sidoNM + ", sigunguNM="
         + sigunguNM + ", bjdongNM=" + bjdongNM + ", bunNum=" + bunNum + ", jiNum=" + jiNum
-        + ", bldNM=" + bldNM + ", mainPurpsNM=" + mainPurpsNM + ", strctNM=" + strctNM + "]";
+        + ", bldNM=" + bldNM + ", mainPurpsNM=" + mainPurpsNM + ", strctNM=" + strctNM + ", hoNM="
+        + hoNM + "]";
   }
   
   
@@ -42,11 +43,11 @@ public class BuildInfo { // 리스트 출력 전용 건물 DTO
   public void setRegstrGBCD(String regstrGBCD) {
     this.regstrGBCD = regstrGBCD;
   }
-  public String getRegstrKINKCD() {
-    return regstrKINKCD;
+  public String getRegstrKINDCD() {
+    return regstrKINDCD;
   }
-  public void setRegstrKINKCD(String regstrKINKCD) {
-    this.regstrKINKCD = regstrKINKCD;
+  public void setRegstrKINDCD(String regstrKINDCD) {
+    this.regstrKINDCD = regstrKINDCD;
   }
   public String getSidoNM() {
     return sidoNM;
@@ -96,6 +97,11 @@ public class BuildInfo { // 리스트 출력 전용 건물 DTO
   public void setStrctNM(String strctNM) {
     this.strctNM = strctNM;
   }
-  
+  public String getHoNM() {
+    return hoNM;
+  }
+  public void setHoNM(String hoNM) {
+    this.hoNM = hoNM;
+  }
   
 }

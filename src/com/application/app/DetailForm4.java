@@ -4,9 +4,11 @@ import java.awt.BorderLayout;
 import java.awt.Choice;
 import java.awt.Color;
 import java.awt.Desktop;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.List;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -60,6 +62,8 @@ public class DetailForm4 extends JFrame implements ActionListener{
   DetailForm4 detailForm4;
   DBBuildDetail dbBuildDetail = new DBBuildDetail();
   
+  int printStatus;
+  
   public DetailForm4() {
     dtlform();
     returnBtn.addActionListener(this);
@@ -92,29 +96,46 @@ public class DetailForm4 extends JFrame implements ActionListener{
   JLabel jLabel30 = new JLabel();
 
   KGradientPanel kGradientPanel1 = new KGradientPanel();
+
   
   // 전유부분 테이블 
-  DefaultTableModel model1 = new DefaultTableModel();
+  DefaultTableModel model1 = new DefaultTableModel() {
+    public boolean isCellEditable(int i, int c) {         // 셀 수정 못하게 막는것 (더블클릭시 해당 셀 입력모드로 바뀌는거 방지)
+    return false;
+    }
+  }; 
   JScrollPane jScrollPane1 = new JScrollPane(); 
   JTable jTable1 = new JTable(model1); 
 
   // 공용부분 테이블
-  DefaultTableModel model2 = new DefaultTableModel();
+  DefaultTableModel model2 = new DefaultTableModel() {
+    public boolean isCellEditable(int i, int c) {         // 셀 수정 못하게 막는것 (더블클릭시 해당 셀 입력모드로 바뀌는거 방지)
+    return false;
+    }
+  }; 
   JScrollPane jScrollPane2 = new JScrollPane();
   JTable jTable2 = new JTable(model2);
   
   // 소유자 현황 테이블
-  DefaultTableModel model3 = new DefaultTableModel();
+  DefaultTableModel model3 = new DefaultTableModel() {
+    public boolean isCellEditable(int i, int c) {         // 셀 수정 못하게 막는것 (더블클릭시 해당 셀 입력모드로 바뀌는거 방지)
+    return false;
+    }
+  }; 
   JScrollPane jScrollPane3 = new JScrollPane(); 
   JTable jTable3 = new JTable(model3);
   
   private void dtlform() {
+    Dimension frameSize = this.getSize(); // 프레임 사이즈
+    Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize(); // 모니터 사이즈
+
+    this.setLocation((screenSize.width - frameSize.width)/5, (screenSize.height - frameSize.height)/7); // 화면 중앙
+    this.setResizable(false); // 화면 크기 임의 변경 금지하는것.
     setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
     returnBtn.setText("돌아가기");              // (리스트) 돌아가기 버튼
     reviseBtn.setText("수정하기");               // 수정하기 버튼
     printBtn.setText("엑셀저장 후 인쇄");          // 인쇄하기 버튼
-    
     
     jLabel1.setText("해당 주소의 전체주소 ");        // 상단 전체주소 라벨
     jLabel21.setText("집합건축물대장(전유부)");
@@ -125,8 +146,8 @@ public class DetailForm4 extends JFrame implements ActionListener{
 
     jLabel2.setText("명칭");                  // 명칭 라벨
     jTextField6.setText("명칭");              // 명칭 텍스트구역
-    jLabel29.setText("호 수");                // 호 수 텍스트구역
-    jTextField7.setText("호 수");             // 호 수 필드구역
+    jLabel29.setText("호 명");                // 호 명 텍스트구역
+    jTextField7.setText("호 명");             // 호 명 필드구역
     jLabel6.setText("대지위치");               // 대지위치 라벨구역
     jTextField1.setText("대지위치");           // 대지위치 텍스트구역
     jTextField1.setEnabled(false);
@@ -143,7 +164,11 @@ public class DetailForm4 extends JFrame implements ActionListener{
     jLabel4.setText("공용부분");              // 공용부분 라벨
     jLabel30.setText("소유자현황");            // 소유자현황 라벨
     
-    jLabel21.setFont(new Font("굴림", 1, 15)); 
+    jLabel1.setFont(new Font("나눔고딕", 0 , 15));
+    jLabel21.setFont(new Font("나눔고딕", 0, 25));
+    jLabel3.setFont(new Font("나눔고딕", 1, 15));
+    jLabel4.setFont(new Font("나눔고딕", 1, 15));
+    jLabel30.setFont(new Font("나눔고딕", 1, 15));
     
       jScrollPane1.setViewportView(jTable1);
       jScrollPane2.setViewportView(jTable2);
@@ -154,6 +179,7 @@ public class DetailForm4 extends JFrame implements ActionListener{
       add(jScrollPane3,BorderLayout.CENTER);
       
       jTable1.setRowHeight(25);
+      jTable2.setRowHeight(25);
       
       model1.addColumn("구분");
       model1.addColumn("층별");
@@ -189,11 +215,12 @@ public class DetailForm4 extends JFrame implements ActionListener{
       jTable2.getColumn("면적(㎡)").setPreferredWidth(10);
     
       DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
-      centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+      centerRenderer.setHorizontalAlignment(JLabel.CENTER); // 데이터 중앙정렬
       jTable1.getColumnModel().getColumn(0).setCellRenderer(centerRenderer);
       jTable1.getColumnModel().getColumn(1).setCellRenderer(centerRenderer);
       jTable2.getColumnModel().getColumn(0).setCellRenderer(centerRenderer);
       jTable2.getColumnModel().getColumn(1).setCellRenderer(centerRenderer);
+      jTable3.getColumnModel().getColumn(0).setCellRenderer(centerRenderer);
       jTable3.getColumnModel().getColumn(2).setCellRenderer(centerRenderer);
       jTable1.setAutoCreateRowSorter(true); // 정렬 기능 추가.
       jTable2.setAutoCreateRowSorter(true); // 정렬 기능 추가.
@@ -404,7 +431,22 @@ public class DetailForm4 extends JFrame implements ActionListener{
     
     if(select == printBtn) {
         try {
-          printWork(build);
+          // 업데이트 확인창 띄우기
+          String[] buttons = {"엑셀 저장만", "저장후 인쇄", "취소하기"};
+          
+          int choiceButton = JOptionPane.showOptionDialog(null, "프린트 하시겠습니까?", "프린트", 
+                        JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, buttons, buttons[1]);
+          
+          if(choiceButton == JOptionPane.CLOSED_OPTION || choiceButton == JOptionPane.CANCEL_OPTION) {
+            
+          } // x를 눌러 창을 닫거나 => -1 , 취소를 누를 때 => 2 
+          else if (choiceButton == JOptionPane.YES_OPTION) { // 엑셀저장만 => 0
+            printStatus = 0;
+            printWork(build);
+          } else if (choiceButton == JOptionPane.NO_OPTION) { // 저장후 인쇄 => 1
+            printStatus = 1;
+            printWork(build);
+          }
         } catch (IOException e1) {
           e1.printStackTrace();
         } catch (SQLException e1) {
@@ -419,7 +461,7 @@ public class DetailForm4 extends JFrame implements ActionListener{
     if(member.getUserGrade().equals("10")) {
       Build reviseBuildInfo = this.build;
       reviseBuildInfo.setBldNM(jTextField6.getText());                   // 건물명(명칭)
-      reviseBuildInfo.setHoCNT(Integer.parseInt(jTextField7.getText())); // 호 수
+      reviseBuildInfo.setHoNM(jTextField7.getText()); // 호 명
       
       System.out.println("수정할 객체 : "+reviseBuildInfo);
       
@@ -652,7 +694,8 @@ public class DetailForm4 extends JFrame implements ActionListener{
         File xlsFile = new File("C:/Users/seoin_01/Desktop/project/src/com/resource/"+build.getBuildingPK()+"_집합건축물대장_전유부.xlsx");
         FileOutputStream fileOut = new FileOutputStream(xlsFile);
         workbook.write(fileOut);
-        System.out.println("저장완료");
+        Desktop.getDesktop().open(xlsFile);
+        
       } catch (FileNotFoundException e) {
         e.printStackTrace();
       } catch (IOException e) {
@@ -661,6 +704,7 @@ public class DetailForm4 extends JFrame implements ActionListener{
       
     } // if 조건 종료
     
+    if(printStatus == 1) {
     // 프린트하기 (Desktop을 생성한 이유는 그냥 출력하게 되면 DEMO 라벨이 붙어서 출력되기때문이다..)
     Desktop desktop = null;
       if(Desktop.isDesktopSupported()) {
@@ -668,7 +712,8 @@ public class DetailForm4 extends JFrame implements ActionListener{
       }
       
       desktop.print(new File("C:/Users/seoin_01/Desktop/project/src/com/resource/"+build.getBuildingPK()+"_집합건축물대장_전유부.xlsx"));
-      
+      System.out.println("엑셀파일 인쇄 완료");
+    }
   }
   
 
@@ -679,7 +724,7 @@ public class DetailForm4 extends JFrame implements ActionListener{
 
     // 리스트에서 선택한 건물 정보로 건축물 대장을 찾음.(대장 구분코드, 대장종류, 대장 PK, bun, ji 정보로 조회)
     Build build = dbBuildDetail.findBuild(
-        buildInfo.getBldTypeGBCD(), buildInfo.getBuildingPK(), buildInfo.getRegstrGBCD(), buildInfo.getRegstrKINKCD(),
+        buildInfo.getBldTypeGBCD(), buildInfo.getBuildingPK(), buildInfo.getRegstrGBCD(), buildInfo.getRegstrKINDCD(),
         buildInfo.getSidoNM(),buildInfo.getSigunguNM(),buildInfo.getBjdongNM(),
         buildInfo.getBunNum(),buildInfo.getJiNum());
     

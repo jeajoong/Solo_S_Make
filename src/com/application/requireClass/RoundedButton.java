@@ -1,6 +1,6 @@
 package com.application.requireClass;
-
-import java.awt.Color;
+/* 설명...
+ * 프로젝트에서 사용할 모저리가 둥근 버튼..*/
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
@@ -66,7 +66,7 @@ public class RoundedButton extends JButton{
      int textY = (height - stringBounds.height) / 2 + fontMetrics.getAscent();
     
      graphics.setColor(getForeground()); 
-     graphics.setFont(new Font("돋움", 0, 13));
+     graphics.setFont(new Font("나눔고딕", 0, 13));
      graphics.drawString(getText(), textX, textY);
      graphics.dispose();
      

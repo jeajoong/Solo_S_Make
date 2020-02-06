@@ -3,9 +3,14 @@ package com.application.app;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Desktop;
+import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.Font;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -43,6 +48,7 @@ import keeptoo.KGradientPanel;
 // 엑셀 저장 출력 완료
 public class DetailForm2 extends JFrame implements ActionListener{
   
+  private static final long serialVersionUID = 1L;
   MainProcess main;
   BuildInfo buildInfo;
   Build build;
@@ -50,6 +56,8 @@ public class DetailForm2 extends JFrame implements ActionListener{
   Member member;
   DetailForm2 detailForm2;
   DBBuildDetail dbBuildDetail = new DBBuildDetail();
+  
+  int printStatus;
   
   public DetailForm2() {
     dtlform();
@@ -64,9 +72,33 @@ public class DetailForm2 extends JFrame implements ActionListener{
     mainPurpsNMComboBox.addActionListener(this);
     mainPurpsCDComboBox.addActionListener(this);
     
+    // 총괄표제부에서 해당 건축물현황 누르면 해당건축물을 조회 되게 해야함.
+    dongBuildInfoTable.addMouseListener(new MouseAdapter() {
+      @Override
+      public void mouseClicked(MouseEvent e) {
+        if(e.getClickCount() == 2) {
+       // buildInfo2는 Jtable에서 선택한 값을 객체에 담음
+          BuildInfo buildInfo2 = new BuildInfo();
+          
+          if(dongBuildInfoTable.getValueAt(dongBuildInfoTable.getSelectedRow(), 0) == null) {
+            buildInfo2.setBuildingPK("");
+          } else {
+            String buildingPK = dongBuildInfoTable.getValueAt(dongBuildInfoTable.getSelectedRow(), 0).toString();  
+            buildInfo2.setBuildingPK(buildingPK);
+          }
+            try {
+              BuildInfo buildInfo3 = dbBuildDetail.findBuild(buildInfo2.getBuildingPK());
+              selectOne(buildInfo3);
+            } catch (SQLException e1) {
+              e1.printStackTrace();
+            }
+        }
+      }
+      
+    });
     setVisible(true);
   }
-  
+
   JButton returnBtn = new JButton(); // 돌아가기 버튼
   JButton reviseBtn = new JButton();
   JButton printBtn = new JButton(); // 출력버튼
@@ -127,15 +159,23 @@ public class DetailForm2 extends JFrame implements ActionListener{
   
   KGradientPanel kGradientPanel1 = new KGradientPanel();
   
-  
   JScrollPane jScrollPane = new JScrollPane(); 
-  DefaultTableModel model = new DefaultTableModel(); //건축물 현황 모델
-  JTable dongBuildInfoTable = new JTable(model);  // 건축물 현황 jTable
+  DefaultTableModel model23 = new DefaultTableModel() { //건축물 현황 모델 
+    private static final long serialVersionUID = 2L; // 이거는 다른 클래스 테이블의 모델들과 충돌나지 않게...
+    public boolean isCellEditable(int i, int c) { // 요 부분은 셀 수정 못하게 막는것 (더블클릭시 해당 셀 입력모드로 바뀌는거 방지)
+      return false;
+    }
+  };
+  JTable dongBuildInfoTable = new JTable(model23);  // 건축물 현황 jTable
 
-  
   @SuppressWarnings({"unchecked", "rawtypes"})
   private void dtlform() {
 
+    Dimension frameSize = this.getSize(); // 프레임 사이즈
+    Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize(); // 모니터 사이즈
+
+    this.setLocation((screenSize.width - frameSize.width)/5, (screenSize.height - frameSize.height)/7); // 화면 중앙
+    this.setResizable(false); // 화면 크기 임의 변경 금지하는것.
     setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
     entirLbl.setText("해당 주소의 전체주소 ");             // 상단 전체주소 라벨
@@ -204,22 +244,24 @@ public class DetailForm2 extends JFrame implements ActionListener{
     jLabel28.setText("건축선 후퇴거리");                // 건축선 후퇴거리 라벨
     jTextField25.setText("건축선 후퇴거리");            // 건축선 후퇴거리 텍스트구역
 
+    entirLbl.setFont(new Font("나눔고딕", 0 , 15));
+    titleLbl.setFont(new Font("나눔고딕", 0, 25));
     vlRatEstmTotAreaLbl.setFont(new java.awt.Font("굴림", 0, 10)); // NOI18N
     jLabel26.setFont(new java.awt.Font("굴림", 0, 10)); // NOI18N
     totPkngCntLbl.setFont(new java.awt.Font("굴림", 0, 10)); // NOI18N
-    titleLbl.setFont(new java.awt.Font("굴림", 1, 15)); // NOI18N
+    buildInfoLbl.setFont(new Font("나눔고딕", 1, 15));
     
-    
-    model.addColumn("구분");
-    model.addColumn("명칭");
-    model.addColumn("도로명주소");
-    model.addColumn("건축물 주구조");
-    model.addColumn("건축물 지붕");
-    model.addColumn("층수");
-    model.addColumn("용도");
-    model.addColumn("연면적(㎡)");
-    model.addColumn("변동일");
-    model.addColumn("변동원인");
+    model23.addColumn("관리건축물 PK");
+    model23.addColumn("구분");
+    model23.addColumn("명칭");
+    model23.addColumn("도로명주소");
+    model23.addColumn("건축물 주구조");
+    model23.addColumn("건축물 지붕");
+    model23.addColumn("층수");
+    model23.addColumn("용도");
+    model23.addColumn("연면적(㎡)");
+    model23.addColumn("변동일");
+    model23.addColumn("변동원인");
     
       jScrollPane.setViewportView(dongBuildInfoTable);
       add(jScrollPane,BorderLayout.CENTER);
@@ -228,6 +270,7 @@ public class DetailForm2 extends JFrame implements ActionListener{
     
     jScrollPane.setViewportView(dongBuildInfoTable);
     
+    dongBuildInfoTable.getColumn("관리건축물 PK").setPreferredWidth(90);
     dongBuildInfoTable.getColumn("구분").setPreferredWidth(20);
     dongBuildInfoTable.getColumn("명칭").setPreferredWidth(30);
     dongBuildInfoTable.getColumn("도로명주소").setPreferredWidth(200);
@@ -404,7 +447,7 @@ public class DetailForm2 extends JFrame implements ActionListener{
         .addGroup(layout.createSequentialGroup()
             .addGap(537, 537, 537)
             .addComponent(titleLbl)
-            .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addContainerGap(10, Short.MAX_VALUE))
         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(kGradientPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
     );
@@ -563,7 +606,22 @@ public class DetailForm2 extends JFrame implements ActionListener{
     
     if(select == printBtn) {
       try {
-        printWork(build);
+        // 업데이트 확인창 띄우기
+        String[] buttons = {"엑셀 저장만", "저장후 인쇄", "취소하기"};
+        
+        int choiceButton = JOptionPane.showOptionDialog(null, "프린트 하시겠습니까?", "프린트", 
+                      JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, buttons, buttons[1]);
+        
+        if(choiceButton == JOptionPane.CLOSED_OPTION || choiceButton == JOptionPane.CANCEL_OPTION) {
+          
+        } // x를 눌러 창을 닫거나 => -1 , 취소를 누를 때 => 2 
+        else if (choiceButton == JOptionPane.YES_OPTION) { // 엑셀저장만 => 0
+          printStatus = 0;
+          printWork(build);
+        } else if (choiceButton == JOptionPane.NO_OPTION) { // 저장후 인쇄 => 1
+          printStatus = 1;
+          printWork(build);
+        }
       } catch (IOException e1) {
         e1.printStackTrace();
       } catch (SQLException e1) {
@@ -623,7 +681,7 @@ public class DetailForm2 extends JFrame implements ActionListener{
       reviseBuildInfo.setMainPurpsCD(mainPurpsCDComboBox.getSelectedItem().toString());    // 주용도코드
       
       reviseBuildInfo.setBcRat(new BigDecimal(bcRatField.getText()));             // 건폐율
-      reviseBuildInfo.setVlRat(new BigDecimal(vlRatField.getText()));  // 용적률
+      reviseBuildInfo.setVlRat(new BigDecimal(vlRatField.getText()));             // 용적률
       reviseBuildInfo.setHoCNT(Integer.parseInt(hoCntField.getText()));           // 총 호수
       reviseBuildInfo.setTotPkngCNT(Integer.parseInt(totPkngCntField.getText())); // 총 주차 대수
       reviseBuildInfo.setAtchBldCnt(Integer.parseInt(atchBldCntField.getText())); // 부속건축물 수
@@ -646,11 +704,8 @@ public class DetailForm2 extends JFrame implements ActionListener{
     }
   }
   
-  
-  
     // 엑셀에 건축물 정보 저장 후 인쇄하기 (Poi 라이브러리 사용) 
   private void printWork(Build build) throws IOException, SQLException {
-    System.out.println("건축물 정보 제대로 받았는지 확인 : "+build);
     
     FileInputStream fis = new FileInputStream("C:/Users/seoin_01/Desktop/project/Origin_xlxs/총괄표제부.xlsx");
     Workbook workbook = new XSSFWorkbook(fis);
@@ -694,19 +749,19 @@ public class DetailForm2 extends JFrame implements ActionListener{
     int checkSum = 0;
     for (int i = 20; i < 20 + buildList.size(); i++) {
       // 시트 위치는 20 행부터 모델테이블은 0행부터 가져와서 붙여줘야 함.
-      sheet1.getRow(i).getCell(2).setCellValue((String) model.getValueAt(i % 20, 0)); // 구분
-      sheet1.getRow(i).getCell(3).setCellValue((String) model.getValueAt(i % 20, 1)); // 명칭
-      sheet1.getRow(i).getCell(4).setCellValue((String) model.getValueAt(i % 20, 2)); // 도로명주소
-      sheet1.getRow(i).getCell(5).setCellValue((String) model.getValueAt(i % 20, 3)); // 건축물 주구조
-      sheet1.getRow(i).getCell(6).setCellValue((String) model.getValueAt(i % 20, 4)); // 건축물 지붕
-      sheet1.getRow(i).getCell(7).setCellValue((int) model.getValueAt(i % 20, 5)); // 층수
-      sheet1.getRow(i).getCell(8).setCellValue((String) model.getValueAt(i % 20, 6)); // 용도
+      sheet1.getRow(i).getCell(2).setCellValue((String) model23.getValueAt(i % 20, 1)); // 구분
+      sheet1.getRow(i).getCell(3).setCellValue((String) model23.getValueAt(i % 20, 2)); // 명칭
+      sheet1.getRow(i).getCell(4).setCellValue((String) model23.getValueAt(i % 20, 3)); // 도로명주소
+      sheet1.getRow(i).getCell(5).setCellValue((String) model23.getValueAt(i % 20, 4)); // 건축물 주구조
+      sheet1.getRow(i).getCell(6).setCellValue((String) model23.getValueAt(i % 20, 5)); // 건축물 지붕
+      sheet1.getRow(i).getCell(7).setCellValue((int) model23.getValueAt(i % 20, 6)); // 층수
+      sheet1.getRow(i).getCell(8).setCellValue((String) model23.getValueAt(i % 20, 7)); // 용도
       
 //      String platArea = new BigDecimal(model.getValueAt(i % 20, 4).toString())
 //                            .setScale(2, BigDecimal.ROUND_HALF_UP).toString();
-      sheet1.getRow(i).getCell(9).setCellValue((String) model.getValueAt(i % 20, 4).toString());                              // 연면적
-      sheet1.getRow(i).getCell(10).setCellValue((String) model.getValueAt(i % 20, 8)); // 변동일
-      sheet1.getRow(i).getCell(11).setCellValue((String) model.getValueAt(i % 20, 9)); // 변동원인
+      sheet1.getRow(i).getCell(9).setCellValue((String) model23.getValueAt(i % 20, 8).toString());// 연면적
+      sheet1.getRow(i).getCell(10).setCellValue((String) model23.getValueAt(i % 20, 9)); // 변동일
+      sheet1.getRow(i).getCell(11).setCellValue((String) model23.getValueAt(i % 20, 10)); // 변동원인
       
       checkSum = checkSum + 1;
       if (checkSum == 7) // checkSum이 7이면 층별정보가 7개.
@@ -733,7 +788,7 @@ public class DetailForm2 extends JFrame implements ActionListener{
       } catch (IOException e) {
         e.printStackTrace();
       }
-      System.out.println("엑셀파일 저장 및 인쇄 완료.");
+      System.out.println("엑셀파일 저장 완료.");
       }
     
     // 더 출력하기.
@@ -760,15 +815,15 @@ public class DetailForm2 extends JFrame implements ActionListener{
         
         // 동별 현황을 출력
           for (int j = 11; j < 11 + buildList.size()-dongStartInt; j++) {
-            sheet2.getRow(j).getCell(2).setCellValue((String) model.getValueAt(dongCheckSum + dongStartInt, 0)); // 구분
-            sheet2.getRow(j).getCell(3).setCellValue((String) model.getValueAt(dongCheckSum + dongStartInt, 1)); // 명칭
-            sheet2.getRow(j).getCell(4).setCellValue((String) model.getValueAt(dongCheckSum + dongStartInt, 2)); // 도로명주소
-            sheet2.getRow(j).getCell(5).setCellValue((String) model.getValueAt(dongCheckSum + dongStartInt, 3)); // 건축물 주구조
-            sheet2.getRow(j).getCell(6).setCellValue((String) model.getValueAt(dongCheckSum + dongStartInt, 4)); // 건축물 지붕
-            sheet2.getRow(j).getCell(7).setCellValue((int) model.getValueAt(dongCheckSum + dongStartInt, 5)); // 층수
-            sheet2.getRow(j).getCell(8).setCellValue((String) model.getValueAt(dongCheckSum + dongStartInt, 6)); // 용도
+            sheet2.getRow(j).getCell(2).setCellValue((String) model23.getValueAt(dongCheckSum + dongStartInt, 1)); // 구분
+            sheet2.getRow(j).getCell(3).setCellValue((String) model23.getValueAt(dongCheckSum + dongStartInt, 2)); // 명칭
+            sheet2.getRow(j).getCell(4).setCellValue((String) model23.getValueAt(dongCheckSum + dongStartInt, 3)); // 도로명주소
+            sheet2.getRow(j).getCell(5).setCellValue((String) model23.getValueAt(dongCheckSum + dongStartInt, 4)); // 건축물 주구조
+            sheet2.getRow(j).getCell(6).setCellValue((String) model23.getValueAt(dongCheckSum + dongStartInt, 5)); // 건축물 지붕
+            sheet2.getRow(j).getCell(7).setCellValue((int) model23.getValueAt(dongCheckSum + dongStartInt, 6)); // 층수
+            sheet2.getRow(j).getCell(8).setCellValue((String) model23.getValueAt(dongCheckSum + dongStartInt, 7)); // 용도
             
-            String platArea = new BigDecimal(model.getValueAt(dongCheckSum + dongStartInt, 7).toString())
+            String platArea = new BigDecimal(model23.getValueAt(dongCheckSum + dongStartInt, 8).toString())
                                   .setScale(2, BigDecimal.ROUND_HALF_UP).toString();
             sheet2.getRow(j).getCell(9).setCellValue(platArea);                              // 연면적
             sheet2.getRow(j).getCell(10).setCellValue(""); // 변동일
@@ -796,7 +851,8 @@ public class DetailForm2 extends JFrame implements ActionListener{
         File xlsFile = new File("C:/Users/seoin_01/Desktop/project/src/com/resource/"+build.getBuildingPK()+"_총괄표제부.xlsx");
         FileOutputStream fileOut = new FileOutputStream(xlsFile);
         workbook.write(fileOut);
-        System.out.println("저장완료");
+        Desktop.getDesktop().open(xlsFile);
+        
       } catch (FileNotFoundException e) {
         e.printStackTrace();
       } catch (IOException e) {
@@ -805,18 +861,17 @@ public class DetailForm2 extends JFrame implements ActionListener{
       
     } // if 조건 종료
 
+    if(printStatus == 1) {
+      
     // 프린트하기 (Desktop을 생성한 이유는 그냥 출력하게 되면 DEMO 라벨이 붙어서 출력되기때문이다..)
     Desktop desktop = null;
     if(Desktop.isDesktopSupported()) {
       desktop = Desktop.getDesktop();
     }
-
     desktop.print(new File("C:/Users/seoin_01/Desktop/project/src/com/resource/"+build.getBuildingPK()+"_총괄표제부.xlsx"));
+    System.out.println("엑셀파일 인쇄 완료.");
+    }
   }
-
-
-
-
 
 
   //상세정보 폼이 실행되면 SearchPage에서 BuildInfo 객체를 받아 Building(건축물대장)의 정보를 조회해서 뿌려준다
@@ -826,7 +881,7 @@ public class DetailForm2 extends JFrame implements ActionListener{
 
     // 리스트에서 선택한 건물 정보로 건축물 대장을 찾음.(대장 구분코드, 대장종류, 대장 PK, bun, ji 정보로 조회)
     Build build = dbBuildDetail.findBuild(
-        buildInfo.getBldTypeGBCD(), buildInfo.getBuildingPK(), buildInfo.getRegstrGBCD(), buildInfo.getRegstrKINKCD(),
+        buildInfo.getBldTypeGBCD(), buildInfo.getBuildingPK(), buildInfo.getRegstrGBCD(), buildInfo.getRegstrKINDCD(),
         buildInfo.getSidoNM(),buildInfo.getSigunguNM(),buildInfo.getBjdongNM(),
         buildInfo.getBunNum(),buildInfo.getJiNum());
     
@@ -881,17 +936,14 @@ public class DetailForm2 extends JFrame implements ActionListener{
       System.out.println("에러!");
     }
     
-    
     // 건축물 수.
     mainBldCntField.setText(Integer.toString(build.getMainBldCnt()));
-    
     
     // 주용도
     setMainPurpsNM(build.getMainPurpsNM());
     
     // 주용도 코드
     setMainPurpsCD(build.getMainPurpsCD());
-    
     
     // 건폐율 
     try {
@@ -941,35 +993,35 @@ public class DetailForm2 extends JFrame implements ActionListener{
     jTextField25.setText("");
     
     dongTableSet(); // 파라미터로 건물정보 넘기지 않아도 됨, DB처리 클래스에서 내부적으로 값 공유
-    
     this.build = build;
-    
   }
 
   // 집합건축물대장 해당하는 건물 동명 정보 리스트를 모델 테이블에 넣어주는 메서드
   private void dongTableSet() throws SQLException {
     
     java.util.List<Build> buildingInfoList = dbBuildDetail.findDongBuild(); 
-    Object[] dongListArray = new Object[10]; 
+    Object[] dongListArray = new Object[11]; 
     
     for (int i = 0; i < buildingInfoList.size(); i++) {
       
+      dongListArray[0] = buildingInfoList.get(i).getBuildingPK();
+      
       if(buildingInfoList.get(i).getMainAtchGBCD().equals("0")) {
-        dongListArray[0] = "주";
+        dongListArray[1] = "주";
       } else if(buildingInfoList.get(i).getMainAtchGBCD().equals("1")){
-        dongListArray[0] = "부";
+        dongListArray[1] = "부";
       } else {
-        dongListArray[0] = "";
+        dongListArray[1] = "";
       }
       
-      dongListArray[1] = buildingInfoList.get(i).getDongNM();
-      dongListArray[2] = buildingInfoList.get(i).getPlatNewLoc();
-      dongListArray[3] = buildingInfoList.get(i).getStrctNM();
+      dongListArray[2] = buildingInfoList.get(i).getDongNM();
+      dongListArray[3] = buildingInfoList.get(i).getPlatNewLoc();
       dongListArray[4] = buildingInfoList.get(i).getStrctNM();
-      dongListArray[5] = buildingInfoList.get(i).getUpDownCNT();
-      dongListArray[6] = buildingInfoList.get(i).getMainPurpsNM();
-      dongListArray[7] = buildingInfoList.get(i).getTotArea();
-      model.addRow(dongListArray);
+      dongListArray[5] = buildingInfoList.get(i).getStrctNM();
+      dongListArray[6] = buildingInfoList.get(i).getUpDownCNT();
+      dongListArray[7] = buildingInfoList.get(i).getMainPurpsNM();
+      dongListArray[8] = buildingInfoList.get(i).getTotArea();
+      model23.addRow(dongListArray);
     }
   }
 
@@ -1001,6 +1053,29 @@ public class DetailForm2 extends JFrame implements ActionListener{
         mainPurpsCDComboBox.setSelectedItem(name.toString());
      } catch (Exception e) {
      }
+  }
+  
+  // 건축물현황에서 데이터를 눌렀을 시 해당데이터로 창을 띄움.
+  protected void selectOne(BuildInfo buildInfo3) throws SQLException {
+    if(buildInfo3.getRegstrGBCD().equals("2")) { // 일반건축물
+      main.createDetailForm();
+      main.showDetailForm(buildInfo);
+    } 
+    else if (buildInfo3.getRegstrGBCD().equals("1")) { // 총괄표제부
+      main.createDetailForm2();
+      main.showDetailForm2(buildInfo);
+    }
+    else if (buildInfo3.getRegstrGBCD().equals("3")) { // 집합표제부
+      main.createDetailForm3();
+      main.showDetailForm3(buildInfo);
+    }
+    else if (buildInfo3.getRegstrGBCD().equals("4")) { // 전유부
+      main.createDetailForm4();
+      main.showDetailForm4(buildInfo);
+    }
+    else {
+      System.out.println("잘못된 대장정보입니다.");
+    }
   }
   
 }

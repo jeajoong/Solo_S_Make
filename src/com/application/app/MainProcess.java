@@ -1,5 +1,39 @@
 package com.application.app;
-
+/*  기능...
+ * - 회원가입 화면
+ *   아이디, 비밀번호, 비밀번호 확인, 이름, 관리자등록번호 텍스트 필드로 구성
+ *   아이디 입력시 기존 테이블(CMC_USER_MGM)의 데이터와 일치하면 경고 표시. (3글자 이상 입력해야 함)
+ *   비밀번호 입력시 비밀번호 확인과 두개의 값이 일치하지 않으면 경고 표시.
+ *   이름은 2글자 이상
+ *   관리자등록번호는 해당 번호값이 맞다면 관리자 등급으로 회원가입(비어두거나 틀리면 일반사용자로 등록)
+ *   관리자등록번호 관리 클래스 (requireClass 패키지 안의 ManagerCheckNumber에 배열로 구성.)
+ *   
+ * - 로그인 화면
+ *   CMC_USER_MGM 테이블의 USER_ID와 PWD의 값으로 로그인을 할 수 있음
+ *   USER_AUTHRT_CD에 따라서 로그인 하기전 관리자인지 일반 유저인지 표기됨
+ * 
+ * - 검색 화면
+ *   시도, 시군구, 법정동 까지만 선택 후 조회하면 느려지거나 멈출 수 있지만 조회 가능.
+ *   번지 입력 후 조회 버튼을 누르면 상세 조회 가능.
+ *   새주소로 검색을 하려면 번지에 해당하는 부분이 비어 있어야 새주소로 검색 가능 (둘다 있는 경우 번지 조회 우선)
+ *   새주소는 도로명과 번이 필수 값. (시도 시군구 없어도 검색 가능)
+ *   전유부제외 체크박스를 체크할 시 해당 검색 값에서 대장종류 4(전유부)를 제외하고 출력 
+ *   완전일치 체크박스를 체크할 시 해당 지번 앞 뒤에 0으로 채워서 검색 (새주소는 '지'에 해당하는 부분에 0을 넣음)
+ *   인쇄 버튼을 누를 시 현재 목록을 프린트
+ *   <<이전 버튼은 해당 검색결과 페이지 이전으로 이동
+ *   다음>> 버튼은 해당 검색결과 페이지 다음으로 이동
+ * 
+ * - 상세 조회 화면
+ *   검색 화면에서 하나의 데이터값을 선택했을 시
+ *   해당 값으로 상세 정보 조회 ( 지역, 지구, 구역, 조경면적, 공개 공간의 면적, 건축선 후퇴면적, 건축선 후퇴거리 부분은 제외)
+ *   주구조, 주용도, 층수, 지붕 선택 박스는 초기에 값이 있다면 값이 선택되어 있음
+ *   명칭으로 찾거나 코드값으로 지정할 수 있음. 층수 관련 업데이트는 지상 또는 지하 하나의 경우만 가능함.
+ *   
+ *   돌아가기 버튼은 검색 화면으로 돌아감(아까 검색했던 결과 그대로)
+ *   수정하기 버튼은 관리자 등급만 가능함.(CMC_USER_MGM 테이블의 USER_AUTHRT_CD 값이 10이여야 함.)
+ *   엑셀저장 후 인쇄 버튼을 누르면 엑셀만 저장할 것인지 선택할 수 있는 창이 나옴.
+ *   
+ */
 import java.sql.SQLException;
 import com.application.db.DBLogin;
 import com.application.dto.BuildInfo;
@@ -9,6 +43,7 @@ public class MainProcess {
   
   Member member;
   LoginForm loginForm;
+  SubmitForm submitForm;
   SearchBuild searchPage;
   DetailForm  detailForm;  // 일반건축물대장
   DetailForm2 detailForm2; // 총괄표제부
@@ -31,17 +66,10 @@ public class MainProcess {
   public void setMemberInfo(Member memberInfo) {
     this.member = memberInfo;
   }
-  /* 로그인 한 회원 객체를 돌려받음 */
-  // 나중에 USERGRADE를 이용해 관리자만 UPDATE,DELETE를 이용 할 수 있게
   
-  public void showMainPage(MainProcess main) {
-    loginForm.dispose();
-    
-    this.searchPage = new SearchBuild();
-    searchPage.setMember(member);
-    searchPage.setMain(main);
+  public void createSubmitForm() {
+    this.submitForm = new SubmitForm();
   }
-
   public void createDetailForm() {
     this.detailForm = new DetailForm();
   }
@@ -53,6 +81,22 @@ public class MainProcess {
   }
   public void createDetailForm4() {
     this.detailForm4 = new DetailForm4();
+  }
+
+  /* 로그인 한 회원 객체를 돌려받음  관리자만 UPDATE */
+  public void showMainPage(MainProcess main) {
+    loginForm.dispose();
+    
+    this.searchPage = new SearchBuild();
+    searchPage.setMember(member);
+    searchPage.setMain(main);
+  }
+  
+  /* 회원가입 폼 띄워주기 */  
+  public void showSubmitForm() {
+    loginForm.dispose();
+    
+    submitForm.setMain(main);
   }
   
     /* 건축물대장 종류에 따라서 분기 */

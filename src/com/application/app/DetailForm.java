@@ -3,8 +3,10 @@ package com.application.app;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Desktop;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -62,6 +64,8 @@ public class DetailForm extends JFrame implements ActionListener{
   
   int grndFlr;
   int urndFlr;
+  int printStatus;
+  
   
   public DetailForm() {
     dtlform();
@@ -162,17 +166,33 @@ public class DetailForm extends JFrame implements ActionListener{
   
   KGradientPanel kGradientPanel1 = new KGradientPanel();
   
-  DefaultTableModel floorModel = new DefaultTableModel(); // 층별 정보 모델1
+  DefaultTableModel floorModel = new DefaultTableModel() { // 층별 정보 모델1
+    public boolean isCellEditable(int i, int c) {         // 셀 수정 못하게 막는것 (더블클릭시 해당 셀 입력모드로 바뀌는거 방지)
+    return false;
+    }
+  }; 
   JScrollPane jScrollPane2 = new JScrollPane(); 
   JTable floorInfoTable = new JTable(floorModel);         // 층별정보 테이블
   
-  DefaultTableModel ownerModel = new DefaultTableModel(); // 소유자 정보 모델1
+  
+  DefaultTableModel ownerModel = new DefaultTableModel() { // 소유자정보 정보 모델1
+    public boolean isCellEditable(int i, int c) {         // 셀 수정 못하게 막는것 (더블클릭시 해당 셀 입력모드로 바뀌는거 방지)
+    return false;
+    }
+  }; 
   JScrollPane jScrollPane3 = new JScrollPane(); 
   JTable ownerInfoTable = new JTable(ownerModel);         // 소유자 테이블
   
   
   
   private void dtlform() {
+    
+    Dimension frameSize = this.getSize(); // 프레임 사이즈
+    Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize(); // 모니터 사이즈
+
+    this.setLocation((screenSize.width - frameSize.width)/5, (screenSize.height - frameSize.height)/7); // 화면 중앙
+    this.setResizable(false); // 화면 크기 임의 변경 금지하는것.
+    
     setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
     returnBtn.setText("돌아가기");              // (리스트) 돌아가기 버튼
@@ -181,7 +201,7 @@ public class DetailForm extends JFrame implements ActionListener{
     
     entirLbl.setText("해당 주소의 전체주소 ");        // 상단 전체주소 라벨
     buildInfoLbl.setText("일반건축물대장");           // 일반건축물대장 라벨
-
+    
     regstrLbl.setText("대장_일련번호");            // 대장 일련번호 라벨
     regstrField.setText("대장_일련번호");        // 대장 일련번호 텍스트구역
     regstrField.setEnabled(false);
@@ -246,11 +266,13 @@ public class DetailForm extends JFrame implements ActionListener{
     floorInfoLbl.setText("층별정보");         // 층별정보 라벨
     ownerInfoLbl.setText("소유자정보");            // 소유자정보 라벨
     
-    buildInfoLbl.setFont(new Font("굴림", 1, 15)); 
+    entirLbl.setFont(new Font("나눔고딕", 0 , 15));
+    buildInfoLbl.setFont(new Font("나눔고딕", 0, 25));
     vlRatEstmTotAreaLbl.setFont(new Font("굴림", 0, 10));
     mainPurpsLbl.setFont(new Font("굴림", 0, 10)); 
     jLabel26.setFont(new Font("굴림", 0, 10));
-
+    floorInfoLbl.setFont(new Font("나눔고딕", 1, 15));
+    ownerInfoLbl.setFont(new Font("나눔고딕", 1, 15));
 
     mainPurpsNMComboBox.setModel(new DefaultComboBoxModel(new String[] { "주용도"}));
     mainPurpsCDComboBox.setModel(new DefaultComboBoxModel(new String[] { "주용도코드"}));
@@ -665,7 +687,23 @@ public class DetailForm extends JFrame implements ActionListener{
     
     if(select == printBtn) {
         try {
-          printWork(build);
+          // 업데이트 확인창 띄우기
+          String[] buttons = {"엑셀 저장만", "저장후 인쇄", "취소하기"};
+          
+          int choiceButton = JOptionPane.showOptionDialog(null, "프린트 하시겠습니까?", "프린트", 
+                        JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, buttons, buttons[1]);
+          
+          if(choiceButton == JOptionPane.CLOSED_OPTION || choiceButton == JOptionPane.CANCEL_OPTION) {
+            
+          } // x를 눌러 창을 닫거나 => -1 , 취소를 누를 때 => 2 
+          else if (choiceButton == JOptionPane.YES_OPTION) { // 엑셀저장만 => 0
+            printStatus = 0;
+            printWork(build);
+          } else if (choiceButton == JOptionPane.NO_OPTION) { // 저장후 인쇄 => 1
+            printStatus = 1;
+            printWork(build);
+          }
+
         } catch (IOException e1) {
           e1.printStackTrace();
         } catch (SQLException e1) {
@@ -825,7 +863,7 @@ public class DetailForm extends JFrame implements ActionListener{
                     JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, buttons, "확인");
       // 확인을 눌렀을 때 0, 취소를 눌렀을 때 1
       
-      if(checkStatus == 0) { 
+      if(checkStatus == 0) {
           dbBuildDetail.updateBuild(reviseBuildInfo);
       }
 
@@ -840,7 +878,6 @@ public class DetailForm extends JFrame implements ActionListener{
   
   // 엑셀에 건축물 정보 저장 후 인쇄하기 (Poi 라이브러리 사용) 
   public void printWork(Build build) throws IOException, SQLException {
-    
     FileInputStream fis = new FileInputStream("C:/Users/seoin_01/Desktop/project/Origin_xlxs/일반건축물대장.xlsx");
     Workbook workbook = new XSSFWorkbook(fis);
     
@@ -864,16 +901,30 @@ public class DetailForm extends JFrame implements ActionListener{
     sheet1.getRow(11).getCell(2).setCellValue(archAreaField.getText());  // 건축면적
     sheet1.getRow(11).getCell(4).setCellValue(vlRatEstmTotAreaField.getText()); // 용적률 산정용 연면적
     
-    sheet1.getRow(11).getCell(6).setCellValue(strctNMComboBox.getSelectedItem().toString());   // 주 구조명
-    sheet1.getRow(11).getCell(7).setCellValue(mainPurpsNMComboBox.getSelectedItem().toString());   // 주 용도명
+    if(!strctNMComboBox.getSelectedItem().equals("주구조명칭")) {
+      sheet1.getRow(11).getCell(6).setCellValue(strctNMComboBox.getSelectedItem().toString());   // 주 구조명
+    } else {
+      sheet1.getRow(11).getCell(6).setCellValue("");
+    }
     
+    if(!mainPurpsNMComboBox.getSelectedItem().equals("주용도명칭")) {
+      sheet1.getRow(11).getCell(7).setCellValue(mainPurpsNMComboBox.getSelectedItem().toString());   // 주 용도명
+    } else {
+      sheet1.getRow(11).getCell(7).setCellValue("");
+    }
     sheet1.getRow(11).getCell(10).setCellValue(build.getGrndFlrCNT()); // 지상층
     sheet1.getRow(11).getCell(12).setCellValue(build.getUgrndFlrCNT()); // 지하층
     
     sheet1.getRow(13).getCell(2).setCellValue(bcRatField.getText()); // 건폐율
     sheet1.getRow(13).getCell(4).setCellValue(vlRatField.getText()); // 용적률
     sheet1.getRow(13).getCell(6).setCellValue(heitField.getText()); // 높이
-    sheet1.getRow(13).getCell(7).setCellValue(roofNMComboBox.getSelectedItem().toString()); // 지붕구조
+
+    if(!roofNMComboBox.getSelectedItem().equals("지붕구조명칭")) {
+      sheet1.getRow(13).getCell(7).setCellValue(roofNMComboBox.getSelectedItem().toString()); // 지붕구조명
+    } else {
+      sheet1.getRow(13).getCell(7).setCellValue(""); // 지붕구조명
+    }
+    
     sheet1.getRow(13).getCell(9).setCellValue(atchBldField.getText()); // 부속건축물 수
     
     sheet1.getRow(16).getCell(2).setCellValue("");    // 공간 면적 합계
@@ -885,7 +936,7 @@ public class DetailForm extends JFrame implements ActionListener{
     
     java.util.List<Floor> floorList = dbBuildDetail.findFlrInfo(build);
     
-    int checkSum = 0;       
+    int checkSum = 0;
     for (int i = 21; i < 21+floorList.size(); i++) { 
       // 시트 위치는 21 행부터  층별 모델테이블은 0행부터 가져와서 붙여줘야 함.
       sheet1.getRow(i).getCell(2).setCellValue((String) floorModel.getValueAt(i % 21, 0)); //구분
@@ -937,7 +988,7 @@ public class DetailForm extends JFrame implements ActionListener{
     } catch (IOException e) {
       e.printStackTrace();
     }
-    System.out.println("엑셀파일 저장 및 인쇄 완료");
+    System.out.println("엑셀파일 저장 완료");
     }
     
     // 더 출력하기.
@@ -1025,7 +1076,8 @@ public class DetailForm extends JFrame implements ActionListener{
         File xlsFile = new File("C:/Users/seoin_01/Desktop/project/src/com/resource/"+build.getBuildingPK()+"_일반건축물대장.xlsx");
         FileOutputStream fileOut = new FileOutputStream(xlsFile);
         workbook.write(fileOut);
-        System.out.println("저장완료");
+        Desktop.getDesktop().open(xlsFile);
+        
       } catch (FileNotFoundException e) {
         e.printStackTrace();
       } catch (IOException e) {
@@ -1034,13 +1086,15 @@ public class DetailForm extends JFrame implements ActionListener{
       
     } // if 조건 종료
     
+    if(printStatus == 1) {
     // 프린트하기 (Desktop을 생성한 이유는 그냥 출력하게 되면 DEMO 라벨이 붙어서 출력되기때문이다..)
     Desktop desktop = null;
       if(Desktop.isDesktopSupported()) {
         desktop = Desktop.getDesktop();
       }
-      
       desktop.print(new File("C:/Users/seoin_01/Desktop/project/src/com/resource/"+build.getBuildingPK()+"_일반건축물대장.xlsx"));
+      System.out.println("엑셀파일 인쇄 완료");
+    }
     
   }
   
@@ -1053,7 +1107,7 @@ public class DetailForm extends JFrame implements ActionListener{
     
     // 리스트에서 선택한 건물 정보로 건축물 대장을 찾음.(대장 구분코드, 대장종류, 대장 PK, bun, ji 정보로 조회)
     Build build = dbBuildDetail.findBuild(
-        buildInfo.getBldTypeGBCD(), buildInfo.getBuildingPK(), buildInfo.getRegstrGBCD(), buildInfo.getRegstrKINKCD(),
+        buildInfo.getBldTypeGBCD(), buildInfo.getBuildingPK(), buildInfo.getRegstrGBCD(), buildInfo.getRegstrKINDCD(),
         buildInfo.getSidoNM(),buildInfo.getSigunguNM(),buildInfo.getBjdongNM(),
         buildInfo.getBunNum(),buildInfo.getJiNum());
     

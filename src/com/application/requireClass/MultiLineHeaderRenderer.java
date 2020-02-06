@@ -1,5 +1,6 @@
 package com.application.requireClass;
-
+/* 설명...
+ * 각 건축물대장의 추가정보 리스트에서 Header 부분에 여러줄 띄어쓰기를 가능하게 하는 클래스*/
 import java.awt.Component;
 import java.io.BufferedReader;
 import java.io.IOException;
